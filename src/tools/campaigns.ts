@@ -7,6 +7,8 @@ import {
   DeleteCampaignSchema,
   ListAdSetsSchema,
   CreateAdSetSchema,
+  GetQuickFixesSchema,
+  VerifyAccountSetupSchema,
 } from "../types/mcp-tools";
 
 export function setupCampaignTools(
@@ -1328,12 +1330,7 @@ export function registerCampaignTools(
   server.tool(
     "get_quick_fixes",
     "Get targeted troubleshooting tips for common Meta Ads API errors. Provide an error message to receive likely causes, suggestions, and next steps for resolution.",
-    {
-      error_message: {
-        type: "string",
-        description: "The error message you received from the API",
-      },
-    },
+    GetQuickFixesSchema.shape,
     async ({ error_message }) => {
       const fixes = {
         error_message,
@@ -1460,12 +1457,7 @@ export function registerCampaignTools(
   server.tool(
     "verify_account_setup",
     "Verify that a Meta ad account is ready for ad creation. Checks for account access, payment method, Facebook pages, and active campaigns. Returns a setup status, recommendations, and warnings.",
-    {
-      account_id: {
-        type: "string",
-        description: "Meta Ad Account ID to verify",
-      },
-    },
+    VerifyAccountSetupSchema.shape,
     async ({ account_id }) => {
       try {
         const verification = {

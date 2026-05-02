@@ -959,6 +959,26 @@ export const UploadImageFromUrlSchema = z.object({
     .describe("Optional custom name for the uploaded image"),
 });
 
+// Diagnostic & Helper Schemas
+export const GetQuickFixesSchema = z.object({
+  error_message: z.string().describe("The error message you received from the API"),
+});
+
+export const VerifyAccountSetupSchema = z.object({
+  account_id: z.string().describe("Meta Ad Account ID to verify"),
+});
+
+export const GetMetaErrorCodesSchema = z.object({
+  error_code: z
+    .string()
+    .optional()
+    .describe("Specific error code to look up (optional - returns all if not provided)"),
+  error_subcode: z
+    .string()
+    .optional()
+    .describe("Specific error subcode for detailed guidance (optional)"),
+});
+
 // Type exports for runtime use
 export type ListCampaignsParams = z.infer<typeof ListCampaignsSchema>;
 export type CreateCampaignParams = z.infer<typeof CreateCampaignSchema>;

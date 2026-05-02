@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import { config } from "dotenv";
-config({ path: ".env.local" }); // Load environment variables from .env.local file
+config(); // Load environment variables from .env file
+config({ path: ".env.local" }); // Load environment variables from .env.local file (overrides .env)
 
+import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { MetaApiClient } from "./meta-client.js";
