@@ -1,6 +1,8 @@
 # Meta Ads MCP (Node.js) - Guia de Configuração
 
-Este repositório agora contém a versão **Node.js/TypeScript** do servidor Meta Ads MCP, ideal para deploy na **Vercel**.
+Este repositório agora contém a versão **Node.js/TypeScript** do servidor Meta Ads MCP, ideal para deploy na **Vercel**. 
+
+*Nota: Repositório oficial movido para allysonassuncao/mcp-meta-ads*
 
 ## 🚀 Como começar localmente
 
