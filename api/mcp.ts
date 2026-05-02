@@ -92,7 +92,13 @@ const handler = async (req: Request) => {
           throw new Error(`Tool not found: ${toolName}`);
         }
 
-        const result = await tool.handler(body.params?.arguments || {});
+        const args = body.params?.arguments || {};
+        // Auto-map ad_account_id to account_id for convenience
+        if (args.ad_account_id && !args.account_id) {
+          args.account_id = args.ad_account_id;
+        }
+
+        const result = await tool.handler(args);
         return new Response(JSON.stringify({
           jsonrpc: "2.0",
           result,

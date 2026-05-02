@@ -108,10 +108,14 @@ export class AuthManager {
   }
 
   getAccountId(accountIdOrNumber: string): string {
-    if (accountIdOrNumber.startsWith("act_")) {
-      return accountIdOrNumber;
+    if (!accountIdOrNumber) {
+      throw new Error("Ad Account ID is required but was not provided.");
     }
-    return `act_${accountIdOrNumber}`;
+    const id = String(accountIdOrNumber);
+    if (id.startsWith("act_")) {
+      return id;
+    }
+    return `act_${id}`;
   }
 
   extractAccountNumber(accountId: string): string {
