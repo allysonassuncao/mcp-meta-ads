@@ -290,7 +290,7 @@ export class UserAuthManager {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
-    return authHeader.substring(7);
+    return authHeader.substring(7).trim();
   }
 
   /**
@@ -436,8 +436,21 @@ export class UserAuthManager {
     name: string;
     email: string;
   }> {
+    const params = new URLSearchParams({
+      fields: 'id,name,email',
+      access_token: accessToken,
+    });
+
+    // Add appsecret_proof if secret is available
+    if (process.env.META_APP_SECRET) {
+      const crypto = await import('crypto');
+      const hmac = crypto.createHmac('sha256', process.env.META_APP_SECRET);
+      const proof = hmac.update(accessToken).digest('hex');
+      params.set('appsecret_proof', proof);
+    }
+
     const response = await fetch(
-      `https://graph.facebook.com/v23.0/me?fields=id,name,email&access_token=${accessToken}`
+      `https://graph.facebook.com/v23.0/me?${params.toString()}`
     );
 
     if (!response.ok) {
