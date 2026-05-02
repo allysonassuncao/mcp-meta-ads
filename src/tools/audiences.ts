@@ -5,7 +5,7 @@ import {
   CreateCustomAudienceSchema,
   CreateLookalikeAudienceSchema,
   EstimateAudienceSizeSchema,
-} from "../types/mcp-tools";
+} from "../types/mcp-tools.js";
 
 export function setupAudienceTools(
   server: McpServer,
@@ -22,7 +22,7 @@ export function registerAudienceTools(
   server.tool(
     "list_audiences",
     ListAudiencesSchema.shape,
-    async ({ account_id, type, limit, after }) => {
+    async ({ account_id, type, limit, after }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getCustomAudiences(account_id, {
@@ -33,14 +33,14 @@ export function registerAudienceTools(
         // Filter by type if specified
         let audiences = result.data;
         if (type) {
-          audiences = audiences.filter((audience) => {
+          audiences = audiences.filter((audience: any) => {
             if (type === "custom") return audience.subtype !== "LOOKALIKE";
             if (type === "lookalike") return audience.subtype === "LOOKALIKE";
             return true; // 'saved' would need different API endpoint
           });
         }
 
-        const formattedAudiences = audiences.map((audience) => ({
+        const formattedAudiences = audiences.map((audience: any) => ({
           id: audience.id,
           name: audience.name,
           description: audience.description,
@@ -101,7 +101,7 @@ export function registerAudienceTools(
       customer_file_source,
       retention_days,
       rule,
-    }) => {
+    }: any) => {
       try {
         const audienceData: any = {
           name,

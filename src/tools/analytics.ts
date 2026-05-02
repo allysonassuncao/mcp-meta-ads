@@ -4,8 +4,8 @@ import {
   GetInsightsSchema,
   ComparePerformanceSchema,
   ExportInsightsSchema,
-} from "../types/mcp-tools";
-import type { AdInsights } from "../types/meta-api";
+} from "../types/mcp-tools.js";
+import type { AdInsights } from "../types/meta-api.js";
 
 export function setupAnalyticsTools(
   server: McpServer,
@@ -30,7 +30,7 @@ export function registerAnalyticsTools(
       fields,
       breakdowns,
       limit,
-    }) => {
+    }: any) => {
       try {
         const params: Record<string, any> = {
           level,
@@ -55,7 +55,7 @@ export function registerAnalyticsTools(
 
         const result = await metaClient.getInsights(object_id, params);
 
-        const insights = result.data.map((insight) => ({
+        const insights = result.data.map((insight: any) => ({
           date_start: insight.date_start,
           date_stop: insight.date_stop,
           impressions: insight.impressions,
@@ -128,7 +128,7 @@ export function registerAnalyticsTools(
   server.tool(
     "compare_performance",
     ComparePerformanceSchema.shape,
-    async ({ object_ids, level, date_preset, time_range, metrics }) => {
+    async ({ object_ids, level, date_preset, time_range, metrics }: any) => {
       try {
         const client = await metaClient;
         const params: Record<string, any> = {

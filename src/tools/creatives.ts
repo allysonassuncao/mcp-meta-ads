@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { MetaApiClient } from "../meta-client.js";
 import {
@@ -10,7 +9,7 @@ import {
   CreativeValidationEnhancedSchema,
   UploadImageFromUrlSchema,
   GetMetaErrorCodesSchema,
-} from "../types/mcp-tools";
+} from "../types/mcp-tools.js";
 
 export function setupCreativeTools(
   server: McpServer,
@@ -28,7 +27,7 @@ export function registerCreativeTools(
     "list_creatives",
     "List all ad creatives in an ad account. Use this to see existing creatives, their formats, and content before creating new ones or reusing existing creatives.",
     ListCreativesSchema.shape,
-    async ({ account_id, limit, after }) => {
+    async ({ account_id, limit, after }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getAdCreatives(account_id, {
@@ -36,7 +35,7 @@ export function registerCreativeTools(
           after,
         });
 
-        const creatives = result.data.map((creative) => ({
+        const creatives = result.data.map((creative: any) => ({
           id: creative.id,
           name: creative.name,
           title: creative.title,
@@ -107,7 +106,7 @@ export function registerCreativeTools(
       enhancement_features,
       attachment_style,
       caption,
-    }) => {
+    }: any) => {
       try {
         console.log("=== CREATE AD CREATIVE DEBUG (v23.0) ===");
         console.log("Input parameters:", {
@@ -291,7 +290,7 @@ export function registerCreativeTools(
 
         // Add ad labels if provided
         if (adlabels && adlabels.length > 0) {
-          creativeData.adlabels = adlabels.map((label) => ({ name: label }));
+          creativeData.adlabels = adlabels.map((label: any) => ({ name: label }));
         }
 
         console.log(
@@ -469,7 +468,7 @@ export function registerCreativeTools(
       call_to_action_type,
       link_url,
       description,
-    }) => {
+    }: any) => {
       try {
         const validationResults = {
           account_id,
@@ -667,7 +666,7 @@ export function registerCreativeTools(
     "preview_ad",
     "Generate HTML preview of how an ad creative will appear in different placements and formats. Useful for testing creative appearance before launching campaigns.",
     PreviewAdSchema.shape,
-    async ({ creative_id, ad_format, product_item_ids }) => {
+    async ({ creative_id, ad_format, product_item_ids }: any) => {
       try {
         const client = await metaClient;
         const result = await client.generateAdPreview(
@@ -718,7 +717,7 @@ export function registerCreativeTools(
     "upload_creative_asset",
     "Get guidance on uploading creative assets (images/videos) to Meta. Provides step-by-step instructions and technical requirements for asset uploads.",
     CreateAdCreativeSchema.shape,
-    async ({ account_id, name }) => {
+    async ({ account_id, name }: any) => {
       try {
         const response = {
           message: "Creative asset upload process",
@@ -775,7 +774,7 @@ export function registerCreativeTools(
     "setup_ab_test",
     "Get comprehensive guidance on setting up A/B tests for ad creatives. Provides best practices, testing strategies, and metrics to track for creative optimization.",
     CreateAdCreativeSchema.shape,
-    async ({ account_id, name }) => {
+    async ({ account_id, name }: any) => {
       try {
         const response = {
           message: "A/B testing setup for creatives",
@@ -839,7 +838,7 @@ export function registerCreativeTools(
     "get_creative_performance",
     "Get guidance on analyzing creative performance metrics. Provides recommended approaches for tracking creative effectiveness and optimization strategies.",
     PreviewAdSchema.shape,
-    async ({ creative_id }) => {
+    async ({ creative_id }: any) => {
       try {
         // This would typically fetch insights for ads using this creative
         // For now, we'll provide a structure showing what performance data is available
@@ -899,7 +898,7 @@ export function registerCreativeTools(
     "update_creative",
     "Get information about creative update limitations in Meta's system. Provides alternative approaches since creatives cannot be modified after creation.",
     CreateAdCreativeSchema.shape,
-    async (_params) => {
+    async (_params: any) => {
       // Note: These variables would be used in actual implementation
       // const { name, title, body } = _params;
       try {
@@ -960,7 +959,7 @@ export function registerCreativeTools(
     "delete_creative",
     "Get guidance on creative deletion process and impact. Provides safety checks and alternative approaches to avoid disrupting active campaigns.",
     PreviewAdSchema.shape,
-    async (params) => {
+    async (params: any) => {
       const { creative_id } = params;
       try {
         // Note: This would require actual deletion logic
@@ -1027,7 +1026,7 @@ export function registerCreativeTools(
       link_url,
       description,
       instagram_actor_id,
-    }) => {
+    }: any) => {
       try {
         const validation = {
           account_id,
@@ -1290,10 +1289,10 @@ export function registerCreativeTools(
 
         // Overall status
         const hasErrors = Object.values(validation.checks).some(
-          (check) => check.status === "error"
+          (check: any) => check.status === "error"
         );
         const hasWarnings = Object.values(validation.checks).some(
-          (check) => check.status === "warning"
+          (check: any) => check.status === "warning"
         );
 
         if (hasErrors) {
@@ -1507,7 +1506,7 @@ export function registerCreativeTools(
     "troubleshoot_creative_issues",
     "Diagnose and fix common creative creation and performance issues. Provide an error message or describe your issue to get specific solutions and recommendations.",
     TroubleshootCreativeSchema.shape,
-    async ({ issue_description, creative_type }) => {
+    async ({ issue_description, creative_type }: any) => {
       try {
         const troubleshooting = {
           issue_description,

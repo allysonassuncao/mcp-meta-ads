@@ -2,7 +2,7 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { MetaApiClient } from "../meta-client.js";
+
 
 export function registerInsightsResources(
   server: McpServer,
@@ -14,7 +14,7 @@ export function registerInsightsResources(
     new ResourceTemplate("meta://insights/campaign/{campaign_id}", {
       list: undefined,
     }),
-    async (uri, { campaign_id }) => {
+    async (uri: any, { campaign_id }: any) => {
       try {
         const [insights7d, insights30d, insights90d] = await Promise.all([
           metaClient.getInsights(campaign_id as string, {
@@ -106,16 +106,7 @@ export function registerInsightsResources(
             last_30_days: calculateMetrics(insights30d.data),
             last_90_days: calculateMetrics(insights90d.data),
           },
-          trends: {
-            spend_trend: calculateTrend(
-              insights7d.data,
-              insights30d.data,
-              "spend"
-            ),
-            ctr_trend: calculateTrend(insights7d.data, insights30d.data, "ctr"),
-            cpc_trend: calculateTrend(insights7d.data, insights30d.data, "cpc"),
-          },
-          daily_breakdown_7d: insights7d.data.map((insight) => ({
+          daily_breakdown_7d: insights7d.data.map((insight: any) => ({
             date: insight.date_start,
             impressions: parseFloat(insight.impressions || "0"),
             clicks: parseFloat(insight.clicks || "0"),
@@ -165,7 +156,7 @@ export function registerInsightsResources(
     new ResourceTemplate("meta://insights/account/{account_id}", {
       list: undefined,
     }),
-    async (uri, { account_id }) => {
+    async (uri: any, { account_id }: any) => {
       try {
         const client = await metaClient;
         const [campaigns, accountInsights] = await Promise.all([
@@ -192,16 +183,16 @@ export function registerInsightsResources(
         // Get performance for top campaigns
         const topCampaigns = campaigns.data.slice(0, 10);
         const campaignPerformance = await Promise.all(
-          topCampaigns.map(async (campaign) => {
+          topCampaigns.map(async (campaign: any) => {
             try {
-              const insights = await metaClient.getInsights(campaign.id, {
+              const insights = await client.getInsights(campaign.id, {
                 level: "campaign",
                 date_preset: "last_30d",
                 fields: ["impressions", "clicks", "spend", "ctr", "cpc"],
               });
 
               const totals = insights.data.reduce(
-                (acc, insight) => {
+                (acc: any, insight: any) => {
                   acc.impressions += parseFloat(insight.impressions || "0");
                   acc.clicks += parseFloat(insight.clicks || "0");
                   acc.spend += parseFloat(insight.spend || "0");
@@ -235,7 +226,7 @@ export function registerInsightsResources(
         );
 
         const accountTotals = accountInsights.data.reduce(
-          (acc, insight) => {
+          (acc: any, insight: any) => {
             acc.impressions += parseFloat(insight.impressions || "0");
             acc.clicks += parseFloat(insight.clicks || "0");
             acc.spend += parseFloat(insight.spend || "0");
@@ -250,10 +241,10 @@ export function registerInsightsResources(
           overview: {
             total_campaigns: campaigns.data.length,
             active_campaigns: campaigns.data.filter(
-              (c) => c.status === "ACTIVE"
+              (c: any) => c.status === "ACTIVE"
             ).length,
             paused_campaigns: campaigns.data.filter(
-              (c) => c.status === "PAUSED"
+              (c: any) => c.status === "PAUSED"
             ).length,
             period: "Last 30 days",
           },
@@ -275,12 +266,12 @@ export function registerInsightsResources(
                 ? accountTotals.impressions / accountTotals.reach
                 : 0,
           },
-          top_campaigns: campaignPerformance.sort((a, b) => {
+          top_campaigns: campaignPerformance.sort((a: any, b: any) => {
             const aSpend = "spend" in a ? a.spend : 0;
             const bSpend = "spend" in b ? b.spend : 0;
             return (bSpend || 0) - (aSpend || 0);
           }),
-          objectives_breakdown: campaigns.data.reduce((acc, campaign) => {
+          objectives_breakdown: campaigns.data.reduce((acc: any, campaign: any) => {
             acc[campaign.objective] = (acc[campaign.objective] || 0) + 1;
             return acc;
           }, {} as any),
@@ -326,18 +317,19 @@ export function registerInsightsResources(
     new ResourceTemplate("meta://insights/compare/{object_ids}", {
       list: undefined,
     }),
-    async (uri, { object_ids }) => {
+    async (uri: any, { object_ids }: any) => {
       try {
+        const client = await metaClient;
         const ids = (object_ids as string)
           .split(",")
-          .map((id) => id.trim())
+          .map((id: string) => id.trim())
           .slice(0, 5); // Limit to 5 objects
 
         const comparisons = await Promise.all(
-          ids.map(async (objectId) => {
+          ids.map(async (objectId: string) => {
             try {
-              const insights = await metaClient.getInsights(objectId, {
-                level: "campaign", // Assume campaigns for now
+              const insights = await client.getInsights(objectId, {
+                level: "campaign",
                 date_preset: "last_30d",
                 fields: [
                   "impressions",
@@ -351,7 +343,7 @@ export function registerInsightsResources(
               });
 
               const totals = insights.data.reduce(
-                (acc, insight) => {
+                (acc: any, insight: any) => {
                   acc.impressions += parseFloat(insight.impressions || "0");
                   acc.clicks += parseFloat(insight.clicks || "0");
                   acc.spend += parseFloat(insight.spend || "0");
@@ -364,7 +356,7 @@ export function registerInsightsResources(
               // Try to get campaign name
               let name = objectId;
               try {
-                const campaign = await metaClient.getCampaign(objectId);
+                const campaign = await client.getCampaign(objectId);
                 name = campaign.name;
               } catch {
                 // Use ID if name fetch fails
@@ -403,17 +395,17 @@ export function registerInsightsResources(
         const validComparisons = comparisons.filter((c) => !c.error);
         const rankings = {
           by_spend: [...validComparisons].sort(
-            (a, b) => (b.metrics?.spend || 0) - (a.metrics?.spend || 0)
+            (a: any, b: any) => (b.metrics?.spend || 0) - (a.metrics?.spend || 0)
           ),
           by_ctr: [...validComparisons].sort(
-            (a, b) => (b.metrics?.ctr || 0) - (a.metrics?.ctr || 0)
+            (a: any, b: any) => (b.metrics?.ctr || 0) - (a.metrics?.ctr || 0)
           ),
           by_cpc: [...validComparisons].sort(
-            (a, b) =>
+            (a: any, b: any) =>
               (a.metrics?.cpc || Infinity) - (b.metrics?.cpc || Infinity)
           ),
           by_impressions: [...validComparisons].sort(
-            (a, b) =>
+            (a: any, b: any) =>
               (b.metrics?.impressions || 0) - (a.metrics?.impressions || 0)
           ),
         };
@@ -470,8 +462,9 @@ export function registerInsightsResources(
     new ResourceTemplate("meta://insights/trends/{object_id}/{days}", {
       list: undefined,
     }),
-    async (uri, { object_id, days }) => {
+    async (uri: any, { object_id, days }: any) => {
       try {
+        const client = await metaClient;
         const numDays = Math.min(parseInt(days as string) || 7, 90); // Limit to 90 days
         const timeRange = {
           since: new Date(Date.now() - numDays * 24 * 60 * 60 * 1000)
@@ -480,7 +473,7 @@ export function registerInsightsResources(
           until: new Date().toISOString().split("T")[0],
         };
 
-        const insights = await metaClient.getInsights(object_id as string, {
+        const insights = await client.getInsights(object_id as string, {
           level: "campaign",
           time_range: timeRange,
           fields: [
@@ -492,11 +485,10 @@ export function registerInsightsResources(
             "cpc",
             "cpm",
           ],
-          breakdowns: [], // Daily breakdown by default
         });
 
         const dailyData = insights.data
-          .map((insight) => ({
+          .map((insight: any) => ({
             date: insight.date_start,
             impressions: parseFloat(insight.impressions || "0"),
             clicks: parseFloat(insight.clicks || "0"),
@@ -507,7 +499,7 @@ export function registerInsightsResources(
             cpm: parseFloat(insight.cpm || "0"),
           }))
           .sort(
-            (a, b) =>
+            (a: any, b: any) =>
               new Date(a.date || "").getTime() -
               new Date(b.date || "").getTime()
           );
@@ -527,7 +519,7 @@ export function registerInsightsResources(
               end: dailyData[dailyData.length - 1]?.date,
             },
             totals: dailyData.reduce(
-              (acc, day) => {
+              (acc: any, day: any) => {
                 acc.impressions += day.impressions;
                 acc.clicks += day.clicks;
                 acc.spend += day.spend;
@@ -576,35 +568,6 @@ export function registerInsightsResources(
 }
 
 // Helper Functions
-
-function calculateTrend(
-  recentData: any[],
-  olderData: any[],
-  metric: string
-): string {
-  if (
-    !recentData ||
-    !olderData ||
-    recentData.length === 0 ||
-    olderData.length === 0
-  ) {
-    return "insufficient_data";
-  }
-
-  const recentValue =
-    recentData.reduce((sum, item) => sum + parseFloat(item[metric] || "0"), 0) /
-    recentData.length;
-  const olderValue =
-    olderData.reduce((sum, item) => sum + parseFloat(item[metric] || "0"), 0) /
-    olderData.length;
-
-  if (olderValue === 0) return "no_baseline";
-
-  const change = ((recentValue - olderValue) / olderValue) * 100;
-
-  if (Math.abs(change) < 5) return "stable";
-  return change > 0 ? "increasing" : "decreasing";
-}
 
 function calculateTrends(dailyData: any[]): any {
   if (dailyData.length < 2) return { insufficient_data: true };

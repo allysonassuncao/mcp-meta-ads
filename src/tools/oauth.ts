@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AuthManager } from "../utils/auth.js";
 import {
@@ -6,7 +5,7 @@ import {
   ExchangeCodeSchema,
   RefreshTokenSchema,
   GenerateSystemTokenSchema,
-} from "../types/mcp-tools";
+} from "../types/mcp-tools.js";
 
 export function setupOAuthTools(server: McpServer, authManager: AuthManager) {
   registerOAuthTools(server, authManager);
@@ -20,7 +19,7 @@ export function registerOAuthTools(
   server.tool(
     "generate_auth_url",
     GenerateAuthUrlSchema.shape,
-    async ({ scopes, state }) => {
+    async ({ scopes, state }: any) => {
       try {
         const manager = await authManager;
         const authUrl = manager.generateAuthUrl(scopes, state);
@@ -70,7 +69,7 @@ export function registerOAuthTools(
   server.tool(
     "exchange_code_for_token",
     ExchangeCodeSchema.shape,
-    async ({ code }) => {
+    async ({ code }: any) => {
       try {
         const manager = await authManager;
         const result = await manager.exchangeCodeForToken(code);
@@ -126,7 +125,7 @@ export function registerOAuthTools(
   server.tool(
     "refresh_to_long_lived_token",
     RefreshTokenSchema.shape,
-    async ({ short_lived_token }) => {
+    async ({ short_lived_token }: any) => {
       try {
         const manager = await authManager;
         const result = await manager.exchangeForLongLivedToken(
@@ -186,7 +185,7 @@ export function registerOAuthTools(
   server.tool(
     "generate_system_user_token",
     GenerateSystemTokenSchema.shape,
-    async ({ system_user_id, scopes, expiring_token }) => {
+    async ({ system_user_id, scopes, expiring_token }: any) => {
       try {
         const manager = await authManager;
         const result = await manager.generateSystemUserToken(

@@ -1,8 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+
 import { UserAuthManager } from '../src/utils/user-auth.js';
 
 // Mock testing endpoint - DO NOT USE IN PRODUCTION
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: any, res: any) {
   if (process.env.NODE_ENV === 'production') {
     return res.status(404).json({ error: 'Not found' });
   }

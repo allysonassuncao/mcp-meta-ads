@@ -1,9 +1,8 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { UserAuthManager, UserSession } from "../../src/utils/user-auth.js";
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+  req: any,
+  res: any
 ) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -35,7 +34,7 @@ export default async function handler(
 
     // Parse cookies properly
     const cookieMap = new Map();
-    cookies.split(";").forEach((cookie) => {
+    cookies.split(";").forEach((cookie: any) => {
       const [name, ...valueParts] = cookie.trim().split("=");
       if (name && valueParts.length > 0) {
         cookieMap.set(name, valueParts.join("=")); // Handle values with = in them

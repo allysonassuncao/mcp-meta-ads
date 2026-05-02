@@ -2,7 +2,6 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { MetaApiClient } from "../meta-client.js";
 
 export function registerCampaignResources(
   server: McpServer,
@@ -10,9 +9,9 @@ export function registerCampaignResources(
 ) {
   // Campaign Data Resource
   server.resource(
-    "campaigns",
+    "campaign-data",
     new ResourceTemplate("meta://campaigns/{account_id}", { list: undefined }),
-    async (uri, { account_id }) => {
+    async (uri: any, { account_id }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getCampaigns(account_id as string, {
@@ -20,36 +19,33 @@ export function registerCampaignResources(
           fields: [
             "id",
             "name",
-            "objective",
             "status",
-            "effective_status",
-            "created_time",
-            "updated_time",
+            "objective",
             "daily_budget",
             "lifetime_budget",
-            "budget_remaining",
+            "start_time",
+            "stop_time",
           ],
         });
 
         const campaignSummary = {
           account_id,
           total_campaigns: result.data.length,
-          active_campaigns: result.data.filter((c) => c.status === "ACTIVE")
+          active_campaigns: result.data.filter((c: any) => c.status === "ACTIVE")
             .length,
-          paused_campaigns: result.data.filter((c) => c.status === "PAUSED")
+          paused_campaigns: result.data.filter((c: any) => c.status === "PAUSED")
             .length,
-          campaigns: result.data.map((campaign) => ({
+          campaigns: result.data.map((campaign: any) => ({
             id: campaign.id,
             name: campaign.name,
             objective: campaign.objective,
             status: campaign.status,
-            effective_status: campaign.effective_status,
-            created_time: campaign.created_time,
-            daily_budget: campaign.daily_budget,
-            lifetime_budget: campaign.lifetime_budget,
-            budget_remaining: campaign.budget_remaining,
+            budget: campaign.daily_budget
+              ? `${campaign.daily_budget} (Daily)`
+              : campaign.lifetime_budget
+              ? `${campaign.lifetime_budget} (Lifetime)`
+              : "Not set",
           })),
-          last_updated: new Date().toISOString(),
         };
 
         return {
@@ -85,96 +81,13 @@ export function registerCampaignResources(
     }
   );
 
-  // Individual Campaign Resource
+  // Campaign Detailed Overview Resource
   server.resource(
-    "campaign-details",
-    new ResourceTemplate("meta://campaign/{campaign_id}", { list: undefined }),
-    async (uri, { campaign_id }) => {
-      try {
-        const [campaign, adSets] = await Promise.all([
-          metaClient.getCampaign(campaign_id as string),
-          metaClient.getAdSets({
-            campaignId: campaign_id as string,
-            limit: 50,
-          }),
-        ]);
-
-        const campaignDetails = {
-          campaign: {
-            id: campaign.id,
-            name: campaign.name,
-            objective: campaign.objective,
-            status: campaign.status,
-            effective_status: campaign.effective_status,
-            created_time: campaign.created_time,
-            updated_time: campaign.updated_time,
-            start_time: campaign.start_time,
-            stop_time: campaign.stop_time,
-            daily_budget: campaign.daily_budget,
-            lifetime_budget: campaign.lifetime_budget,
-            budget_remaining: campaign.budget_remaining,
-            account_id: campaign.account_id,
-          },
-          ad_sets: {
-            total_count: adSets.data.length,
-            active_count: adSets.data.filter((as) => as.status === "ACTIVE")
-              .length,
-            paused_count: adSets.data.filter((as) => as.status === "PAUSED")
-              .length,
-            list: adSets.data.map((adSet) => ({
-              id: adSet.id,
-              name: adSet.name,
-              status: adSet.status,
-              effective_status: adSet.effective_status,
-              daily_budget: adSet.daily_budget,
-              lifetime_budget: adSet.lifetime_budget,
-              optimization_goal: adSet.optimization_goal,
-              billing_event: adSet.billing_event,
-            })),
-          },
-          last_updated: new Date().toISOString(),
-        };
-
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: "application/json",
-              text: JSON.stringify(campaignDetails, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error occurred";
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: "application/json",
-              text: JSON.stringify(
-                {
-                  error: "Failed to fetch campaign details",
-                  message: errorMessage,
-                  campaign_id,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  // Campaign Status Overview Resource
-  server.resource(
-    "campaign-status",
-    new ResourceTemplate("meta://campaign-status/{account_id}", {
+    "campaign-overview",
+    new ResourceTemplate("meta://campaign-overview/{account_id}", {
       list: undefined,
     }),
-    async (uri, { account_id }) => {
+    async (uri: any, { account_id }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getCampaigns(account_id as string, {
@@ -187,10 +100,12 @@ export function registerCampaignResources(
             "objective",
             "daily_budget",
             "lifetime_budget",
+            "buying_type",
+            "bid_strategy",
           ],
         });
 
-        const statusBreakdown = result.data.reduce((acc, campaign) => {
+        const statusBreakdown = result.data.reduce((acc: any, campaign: any) => {
           const status = campaign.effective_status || campaign.status;
           if (!acc[status]) {
             acc[status] = {
@@ -223,17 +138,17 @@ export function registerCampaignResources(
           account_id,
           total_campaigns: result.data.length,
           status_breakdown: statusBreakdown,
-          objectives_breakdown: result.data.reduce((acc, campaign) => {
+          objectives_breakdown: result.data.reduce((acc: any, campaign: any) => {
             acc[campaign.objective] = (acc[campaign.objective] || 0) + 1;
             return acc;
           }, {} as any),
           budget_summary: {
             total_daily_budget: result.data.reduce(
-              (sum, c) => sum + parseFloat(c.daily_budget || "0"),
+              (sum: any, c: any) => sum + parseFloat(c.daily_budget || "0"),
               0
             ),
             total_lifetime_budget: result.data.reduce(
-              (sum, c) => sum + parseFloat(c.lifetime_budget || "0"),
+              (sum: any, c: any) => sum + parseFloat(c.lifetime_budget || "0"),
               0
             ),
           },
@@ -259,7 +174,7 @@ export function registerCampaignResources(
               mimeType: "application/json",
               text: JSON.stringify(
                 {
-                  error: "Failed to fetch campaign status overview",
+                  error: "Failed to fetch campaign overview data",
                   message: errorMessage,
                   account_id,
                 },
@@ -273,36 +188,28 @@ export function registerCampaignResources(
     }
   );
 
-  // Ad Sets Resource
+  // Campaign Ad Sets Resource
   server.resource(
-    "adsets",
-    new ResourceTemplate("meta://adsets/{campaign_id}", { list: undefined }),
-    async (uri, { campaign_id }) => {
+    "campaign-ad-sets",
+    new ResourceTemplate("meta://campaign/{campaign_id}/ad-sets", {
+      list: undefined,
+    }),
+    async (uri: any, { campaign_id }: any) => {
       try {
-        const result = await metaClient.getAdSets({
+        const client = await metaClient;
+        const result = await client.getAdSets({
           campaignId: campaign_id as string,
           limit: 100,
-          fields: [
-            "id",
-            "name",
-            "status",
-            "effective_status",
-            "daily_budget",
-            "lifetime_budget",
-            "optimization_goal",
-            "billing_event",
-            "targeting",
-          ],
         });
 
         const adSetSummary = {
           campaign_id,
           total_ad_sets: result.data.length,
-          active_ad_sets: result.data.filter((as) => as.status === "ACTIVE")
+          active_ad_sets: result.data.filter((as: any) => as.status === "ACTIVE")
             .length,
-          paused_ad_sets: result.data.filter((as) => as.status === "PAUSED")
+          paused_ad_sets: result.data.filter((as: any) => as.status === "PAUSED")
             .length,
-          ad_sets: result.data.map((adSet) => ({
+          ad_sets: result.data.map((adSet: any) => ({
             id: adSet.id,
             name: adSet.name,
             status: adSet.status,
@@ -311,27 +218,14 @@ export function registerCampaignResources(
             lifetime_budget: adSet.lifetime_budget,
             optimization_goal: adSet.optimization_goal,
             billing_event: adSet.billing_event,
-            targeting_summary: adSet.targeting
-              ? {
-                  age_range:
-                    adSet.targeting.age_min && adSet.targeting.age_max
-                      ? `${adSet.targeting.age_min}-${adSet.targeting.age_max}`
-                      : "Not specified",
-                  genders: adSet.targeting.genders || "All",
-                  locations:
-                    adSet.targeting.geo_locations?.countries?.length || 0,
-                  interests: adSet.targeting.interests?.length || 0,
-                  behaviors: adSet.targeting.behaviors?.length || 0,
-                }
-              : null,
           })),
           budget_breakdown: {
             total_daily_budget: result.data.reduce(
-              (sum, as) => sum + parseFloat(as.daily_budget || "0"),
+              (sum: any, as: any) => sum + parseFloat(as.daily_budget || "0"),
               0
             ),
             total_lifetime_budget: result.data.reduce(
-              (sum, as) => sum + parseFloat(as.lifetime_budget || "0"),
+              (sum: any, as: any) => sum + parseFloat(as.lifetime_budget || "0"),
               0
             ),
           },
@@ -357,7 +251,7 @@ export function registerCampaignResources(
               mimeType: "application/json",
               text: JSON.stringify(
                 {
-                  error: "Failed to fetch ad set data",
+                  error: "Failed to fetch campaign ad sets data",
                   message: errorMessage,
                   campaign_id,
                 },

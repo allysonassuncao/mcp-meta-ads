@@ -9,7 +9,7 @@ import {
   CreateAdSetSchema,
   GetQuickFixesSchema,
   VerifyAccountSetupSchema,
-} from "../types/mcp-tools";
+} from "../types/mcp-tools.js";
 
 export function setupCampaignTools(
   server: McpServer,
@@ -27,7 +27,7 @@ export function registerCampaignTools(
     "list_campaigns",
     "Retrieve a paginated list of all campaigns for a Meta ad account. Filter by status (e.g., ACTIVE, PAUSED) and view key campaign details including budget, objective, and timing. Use this to audit or select campaigns for further actions.",
     ListCampaignsSchema.shape,
-    async ({ account_id, status, limit, after }) => {
+    async ({ account_id, status, limit, after }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getCampaigns(account_id, {
@@ -36,7 +36,7 @@ export function registerCampaignTools(
           after,
         });
 
-        const campaigns = result.data.map((campaign) => ({
+        const campaigns = result.data.map((campaign: any) => ({
           id: campaign.id,
           name: campaign.name,
           objective: campaign.objective,
@@ -104,7 +104,7 @@ export function registerCampaignTools(
       bid_strategy,
       bid_cap,
       budget_optimization,
-    }) => {
+    }: any) => {
       try {
         const client = await metaClient;
         if (daily_budget && lifetime_budget) {
@@ -191,7 +191,7 @@ export function registerCampaignTools(
       lifetime_budget,
       start_time,
       stop_time,
-    }) => {
+    }: any) => {
       try {
         const client = await metaClient;
         const updates: Record<string, string | number> = {};
@@ -253,7 +253,7 @@ export function registerCampaignTools(
     "pause_campaign",
     "Instantly pause a campaign to stop ad delivery and spending. Use for emergency stops, budget control, or temporary suspensions. Requires the campaign ID.",
     DeleteCampaignSchema.shape,
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         await client.updateCampaign(campaign_id, { status: "PAUSED" });
@@ -294,7 +294,7 @@ export function registerCampaignTools(
     "resume_campaign",
     "Reactivate a previously paused campaign to resume ad delivery and spending. Requires the campaign ID.",
     DeleteCampaignSchema.shape,
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         await client.updateCampaign(campaign_id, { status: "ACTIVE" });
@@ -335,7 +335,7 @@ export function registerCampaignTools(
     "delete_campaign",
     "Permanently delete a campaign and all its associated ad sets and ads. This action cannot be undone. Requires the campaign ID.",
     DeleteCampaignSchema.shape,
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         await client.deleteCampaign(campaign_id);
@@ -375,7 +375,7 @@ export function registerCampaignTools(
     "list_ad_sets",
     "List all ad sets for a given campaign or ad account. Filter by status and paginate results. Returns ad set details including budget, targeting, and optimization settings.",
     ListAdSetsSchema.shape,
-    async ({ campaign_id, account_id, status, limit, after }) => {
+    async ({ campaign_id, account_id, status, limit, after }: any) => {
       try {
         const client = await metaClient;
         if (!campaign_id && !account_id) {
@@ -398,7 +398,7 @@ export function registerCampaignTools(
           after,
         });
 
-        const adSets = result.data.map((adSet) => ({
+        const adSets = result.data.map((adSet: any) => ({
           id: adSet.id,
           name: adSet.name,
           campaign_id: adSet.campaign_id,
@@ -455,7 +455,7 @@ export function registerCampaignTools(
     "check_campaign_readiness",
     "Check if a campaign is ready for ad set creation. Returns a readiness report with issues, requirements, and recommendations based on campaign status, objective, and budget. Use before creating ad sets to avoid common errors.",
     DeleteCampaignSchema.shape, // Reusing for campaign_id param
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         const campaign = await client.getCampaign(campaign_id);
@@ -601,7 +601,7 @@ export function registerCampaignTools(
       configured_status,
       optimization_sub_event,
       recurring_budget_semantics,
-    }) => {
+    }: any) => {
       try {
         const client = await metaClient;
         if (daily_budget && lifetime_budget) {
@@ -994,7 +994,7 @@ export function registerCampaignTools(
     "list_ads",
     "List all ads for a given campaign, ad set, or ad account. Filter by status and paginate results. Returns ad details including creative, status, and timing.",
     ListAdSetsSchema.shape,
-    async ({ campaign_id, account_id, status, limit, after }) => {
+    async ({ campaign_id, account_id, status, limit, after }: any) => {
       try {
         const client = await metaClient;
         if (!campaign_id && !account_id) {
@@ -1017,7 +1017,7 @@ export function registerCampaignTools(
           after,
         });
 
-        const ads = result.data.map((ad) => ({
+        const ads = result.data.map((ad: any) => ({
           id: ad.id,
           name: ad.name,
           adset_id: ad.adset_id,
@@ -1069,7 +1069,7 @@ export function registerCampaignTools(
     "get_campaign",
     "Retrieve full details for a specific campaign by ID. Returns all campaign fields including status, objective, budget, and timing.",
     DeleteCampaignSchema.shape,
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         const campaign = await client.getCampaign(campaign_id);
@@ -1121,7 +1121,7 @@ export function registerCampaignTools(
     "list_campaign_ad_sets",
     "List all ad sets within a specific campaign. Returns ad set details and a summary of active/paused counts and total daily budget.",
     DeleteCampaignSchema.shape, // Reusing for campaign_id param
-    async ({ campaign_id }) => {
+    async ({ campaign_id }: any) => {
       try {
         const client = await metaClient;
         const result = await client.getAdSets({
@@ -1129,7 +1129,7 @@ export function registerCampaignTools(
           limit: 50,
         });
 
-        const adSets = result.data.map((adSet) => ({
+        const adSets = result.data.map((adSet: any) => ({
           id: adSet.id,
           name: adSet.name,
           status: adSet.status,
@@ -1148,13 +1148,13 @@ export function registerCampaignTools(
           total_count: adSets.length,
           summary: {
             active_count: adSets.filter(
-              (as) => as.effective_status === "ACTIVE"
+              (as: any) => as.effective_status === "ACTIVE"
             ).length,
             paused_count: adSets.filter(
-              (as) => as.effective_status === "PAUSED"
+              (as: any) => as.effective_status === "PAUSED"
             ).length,
             total_daily_budget: adSets.reduce(
-              (sum, as) => sum + (Number(as.daily_budget) || 0),
+              (sum: any, as: any) => sum + (Number(as.daily_budget) || 0),
               0
             ),
           },
@@ -1343,7 +1343,7 @@ export function registerCampaignTools(
     "get_quick_fixes",
     "Get targeted troubleshooting tips for common Meta Ads API errors. Provide an error message to receive likely causes, suggestions, and next steps for resolution.",
     GetQuickFixesSchema.shape,
-    async ({ error_message }) => {
+    async ({ error_message }: any) => {
       const fixes = {
         error_message,
         suggestions: [] as string[],
@@ -1470,7 +1470,7 @@ export function registerCampaignTools(
     "verify_account_setup",
     "Verify that a Meta ad account is ready for ad creation. Checks for account access, payment method, Facebook pages, and active campaigns. Returns a setup status, recommendations, and warnings.",
     VerifyAccountSetupSchema.shape,
-    async ({ account_id }) => {
+    async ({ account_id }: any) => {
       try {
         const client = await metaClient;
         const verification = {
