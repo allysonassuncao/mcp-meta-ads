@@ -24,10 +24,10 @@ const handler = async (req: Request) => {
         if (!user) {
           throw new Error("Invalid authentication token. Please log in again.");
         }
-        const auth = await UserAuthManager.createUserAuthManager(user.userId);
-        if (!auth) {
-          throw new Error("Failed to initialize user authentication");
-        }
+        
+        // This helper handles both JWT-based sessions and direct Meta tokens
+        const auth = UserAuthManager.createAuthManagerFromSession(user);
+        
         await auth.refreshTokenIfNeeded();
         return new MetaApiClient(auth);
       })();

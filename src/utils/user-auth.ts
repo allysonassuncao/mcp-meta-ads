@@ -302,12 +302,50 @@ export class UserAuthManager {
       return null;
     }
 
+    // Detect if it's a Meta token (usually starts with EAA) or a JWT
+    if (token.startsWith('EAA')) {
+      // Direct Meta token mode (Pass-through)
+      try {
+        const userInfo = await this.getMetaUserInfo(token);
+        return {
+          userId: `external_${userInfo.id}`,
+          email: userInfo.email || '',
+          name: userInfo.name || 'External User',
+          metaUserId: userInfo.id,
+          accessToken: token,
+          createdAt: new Date(),
+          lastUsed: new Date(),
+        };
+      } catch (error) {
+        console.error('External Meta token validation failed:', error);
+        return null;
+      }
+    }
+
     const decoded = await this.verifySessionToken(token);
     if (!decoded) {
       return null;
     }
 
     return await this.getUserSession(decoded.userId);
+  }
+
+  /**
+   * Create an AuthManager instance from a UserSession (supports both stored and ephemeral sessions)
+   */
+  static createAuthManagerFromSession(session: UserSession): AuthManager {
+    const config: MetaApiConfig = {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      appId: process.env.META_APP_ID,
+      appSecret: process.env.META_APP_SECRET,
+      redirectUri: process.env.META_REDIRECT_URI,
+      autoRefresh: !!session.refreshToken,
+      apiVersion: process.env.META_API_VERSION,
+      baseUrl: process.env.META_BASE_URL,
+    };
+
+    return new AuthManager(config);
   }
 
   /**
