@@ -22,7 +22,8 @@ const handler = async (req: Request) => {
         }
         const user = await UserAuthManager.authenticateUser(authHeader);
         if (!user) {
-          throw new Error("Invalid authentication token. Please log in again.");
+          console.error("Authentication failed for header:", authHeader?.substring(0, 20));
+          throw new Error("Invalid authentication token. Check Vercel logs for Meta API error details.");
         }
         
         // This helper handles both JWT-based sessions and direct Meta tokens

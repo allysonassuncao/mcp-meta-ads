@@ -317,7 +317,7 @@ export class UserAuthManager {
           lastUsed: new Date(),
         };
       } catch (error) {
-        console.error('External Meta token validation failed:', error);
+        console.error('External Meta token validation failed. Token prefix:', token.substring(0, 10), 'Error:', error);
         return null;
       }
     }
