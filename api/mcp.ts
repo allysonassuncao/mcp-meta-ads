@@ -52,7 +52,6 @@ const handler = async (req: Request) => {
   };
 
   // 1. Handle Simple POST (Postman/REST mode)
-  // If it's a POST and doesn't explicitly ask for SSE, handle it as a standard JSON-RPC request
   if (req.method === "POST" && !acceptHeader.includes("text/event-stream")) {
     try {
       const body = await req.json();
@@ -62,33 +61,53 @@ const handler = async (req: Request) => {
       });
 
       const metaClientPromise = (async () => {
-        if (!authHeader) {
-          throw new Error("Authentication required: Missing Authorization header.");
-        }
+        if (!authHeader) throw new Error("Authentication required");
         const user = await UserAuthManager.authenticateUser(authHeader);
-        if (!user) {
-          throw new Error("Invalid authentication token.");
-        }
-        const auth = UserAuthManager.createAuthManagerFromSession(user);
-        return new MetaApiClient(auth);
+        if (!user) throw new Error("Invalid token");
+        return new MetaApiClient(UserAuthManager.createAuthManagerFromSession(user));
       })();
 
       setupServer(server, metaClientPromise);
 
-      // Execute the request directly through the MCP SDK's internal server
-      const response = await (server as any).server.handleRequest(body);
-      
-      return new Response(JSON.stringify(response), {
-        headers: { "Content-Type": "application/json" },
-      });
+      // Manual JSON-RPC Handling for Postman
+      if (body.method === "tools/list") {
+        const tools = Object.entries((server as any)._registeredTools).map(([name, tool]: [string, any]) => ({
+          name,
+          description: tool.description,
+          inputSchema: tool.inputSchema,
+        }));
+
+        return new Response(JSON.stringify({
+          jsonrpc: "2.0",
+          result: { tools },
+          id: body.id
+        }), { headers: { "Content-Type": "application/json" } });
+      }
+
+      if (body.method === "tools/call") {
+        const toolName = body.params?.name;
+        const tool = (server as any)._registeredTools[toolName];
+        
+        if (!tool) {
+          throw new Error(`Tool not found: ${toolName}`);
+        }
+
+        const result = await tool.handler(body.params?.arguments || {});
+        return new Response(JSON.stringify({
+          jsonrpc: "2.0",
+          result,
+          id: body.id
+        }), { headers: { "Content-Type": "application/json" } });
+      }
+
+      // Fallback for other methods
+      throw new Error(`Method ${body.method} not supported in simple POST mode. Use SSE for full protocol support.`);
     } catch (error) {
       return new Response(JSON.stringify({
         jsonrpc: "2.0",
         error: { code: -32000, message: error instanceof Error ? error.message : "Unknown error" },
         id: null
-      }), {
-        headers: { "Content-Type": "application/json" }
-      });
+      }), { headers: { "Content-Type": "application/json" } });
     }
   }
 
@@ -96,13 +115,9 @@ const handler = async (req: Request) => {
   return createMcpHandler(
     (server) => {
       const metaClientPromise = (async () => {
-        if (!authHeader) {
-          throw new Error("Authentication required: Missing Authorization header.");
-        }
+        if (!authHeader) throw new Error("Authentication required");
         const user = await UserAuthManager.authenticateUser(authHeader);
-        if (!user) {
-          throw new Error("Invalid authentication token.");
-        }
+        if (!user) throw new Error("Invalid token");
         const auth = UserAuthManager.createAuthManagerFromSession(user);
         await auth.refreshTokenIfNeeded();
         return new MetaApiClient(auth);
