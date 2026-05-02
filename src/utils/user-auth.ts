@@ -449,9 +449,21 @@ export class UserAuthManager {
       params.set('appsecret_proof', proof);
     }
 
-    const response = await fetch(
-      `https://graph.facebook.com/v23.0/me?${params.toString()}`
+    let response = await fetch(
+      `https://graph.facebook.com/${process.env.META_API_VERSION || 'v23.0'}/me?${params.toString()}`
     );
+
+    // If it fails with decryption error, try WITHOUT appsecret_proof as a fallback
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (errorData.error?.code === 190 && errorData.error?.message?.includes('decrypted')) {
+        console.warn('Decryption failed with appsecret_proof, retrying without it...');
+        params.delete('appsecret_proof');
+        response = await fetch(
+          `https://graph.facebook.com/${process.env.META_API_VERSION || 'v23.0'}/me?${params.toString()}`
+        );
+      }
+    }
 
     if (!response.ok) {
       const error = await response.text();
