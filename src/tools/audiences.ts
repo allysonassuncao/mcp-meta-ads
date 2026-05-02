@@ -16,7 +16,7 @@ export function setupAudienceTools(
 
 export function registerAudienceTools(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // List Audiences Tool
   server.tool(
@@ -24,7 +24,8 @@ export function registerAudienceTools(
     ListAudiencesSchema.shape,
     async ({ account_id, type, limit, after }) => {
       try {
-        const result = await metaClient.getCustomAudiences(account_id, {
+        const client = await metaClient;
+        const result = await client.getCustomAudiences(account_id, {
           limit,
           after,
         });

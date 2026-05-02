@@ -21,7 +21,7 @@ export function setupCreativeTools(
 
 export function registerCreativeTools(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // List Creatives Tool
   server.tool(
@@ -30,7 +30,8 @@ export function registerCreativeTools(
     ListCreativesSchema.shape,
     async ({ account_id, limit, after }) => {
       try {
-        const result = await metaClient.getAdCreatives(account_id, {
+        const client = await metaClient;
+        const result = await client.getAdCreatives(account_id, {
           limit,
           after,
         });
@@ -668,7 +669,8 @@ export function registerCreativeTools(
     PreviewAdSchema.shape,
     async ({ creative_id, ad_format, product_item_ids }) => {
       try {
-        const result = await metaClient.generateAdPreview(
+        const client = await metaClient;
+        const result = await client.generateAdPreview(
           creative_id,
           ad_format,
           product_item_ids
@@ -1763,7 +1765,8 @@ export function registerCreativeTools(
         };
 
         // Get creatives from account
-        const result = await metaClient.getAdCreatives(account_id, {
+        const client = await metaClient;
+        const result = await client.getAdCreatives(account_id, {
           limit: limit || 50,
         });
         const creatives = result.data;

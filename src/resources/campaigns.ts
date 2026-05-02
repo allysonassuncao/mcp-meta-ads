@@ -6,7 +6,7 @@ import { MetaApiClient } from "../meta-client.js";
 
 export function registerCampaignResources(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // Campaign Data Resource
   server.resource(
@@ -14,7 +14,8 @@ export function registerCampaignResources(
     new ResourceTemplate("meta://campaigns/{account_id}", { list: undefined }),
     async (uri, { account_id }) => {
       try {
-        const result = await metaClient.getCampaigns(account_id as string, {
+        const client = await metaClient;
+        const result = await client.getCampaigns(account_id as string, {
           limit: 100,
           fields: [
             "id",
@@ -175,7 +176,8 @@ export function registerCampaignResources(
     }),
     async (uri, { account_id }) => {
       try {
-        const result = await metaClient.getCampaigns(account_id as string, {
+        const client = await metaClient;
+        const result = await client.getCampaigns(account_id as string, {
           limit: 200,
           fields: [
             "id",

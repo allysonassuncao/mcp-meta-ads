@@ -16,7 +16,7 @@ export function setupAnalyticsTools(
 
 export function registerAnalyticsTools(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // Get Insights Tool
   server.tool(
@@ -130,6 +130,7 @@ export function registerAnalyticsTools(
     ComparePerformanceSchema.shape,
     async ({ object_ids, level, date_preset, time_range, metrics }) => {
       try {
+        const client = await metaClient;
         const params: Record<string, any> = {
           level,
           fields: metrics,
@@ -148,7 +149,7 @@ export function registerAnalyticsTools(
 
         for (const objectId of object_ids) {
           try {
-            const result = await metaClient.getInsights(objectId, params);
+            const result = await client.getInsights(objectId, params);
             const summary = calculateSummaryMetrics(result.data);
 
             // Get object details (name, etc.)

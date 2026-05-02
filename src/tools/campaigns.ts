@@ -20,7 +20,7 @@ export function setupCampaignTools(
 
 export function registerCampaignTools(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // List Campaigns Tool
   server.tool(
@@ -29,7 +29,8 @@ export function registerCampaignTools(
     ListCampaignsSchema.shape,
     async ({ account_id, status, limit, after }) => {
       try {
-        const result = await metaClient.getCampaigns(account_id, {
+        const client = await metaClient;
+        const result = await client.getCampaigns(account_id, {
           status: status ? [status] : undefined,
           limit,
           after,
@@ -105,6 +106,7 @@ export function registerCampaignTools(
       budget_optimization,
     }) => {
       try {
+        const client = await metaClient;
         if (daily_budget && lifetime_budget) {
           return {
             content: [
@@ -134,7 +136,7 @@ export function registerCampaignTools(
         if (budget_optimization !== undefined)
           campaignData.is_budget_optimization_enabled = budget_optimization;
 
-        const result = await metaClient.createCampaign(
+        const result = await client.createCampaign(
           account_id,
           campaignData
         );
@@ -191,6 +193,7 @@ export function registerCampaignTools(
       stop_time,
     }) => {
       try {
+        const client = await metaClient;
         const updates: Record<string, string | number> = {};
 
         if (name) updates.name = name;
@@ -212,7 +215,7 @@ export function registerCampaignTools(
           };
         }
 
-        await metaClient.updateCampaign(campaign_id, updates);
+        await client.updateCampaign(campaign_id, updates);
 
         const response = {
           success: true,
@@ -252,7 +255,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape,
     async ({ campaign_id }) => {
       try {
-        await metaClient.updateCampaign(campaign_id, { status: "PAUSED" });
+        const client = await metaClient;
+        await client.updateCampaign(campaign_id, { status: "PAUSED" });
 
         const response = {
           success: true,
@@ -292,7 +296,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape,
     async ({ campaign_id }) => {
       try {
-        await metaClient.updateCampaign(campaign_id, { status: "ACTIVE" });
+        const client = await metaClient;
+        await client.updateCampaign(campaign_id, { status: "ACTIVE" });
 
         const response = {
           success: true,
@@ -332,7 +337,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape,
     async ({ campaign_id }) => {
       try {
-        await metaClient.deleteCampaign(campaign_id);
+        const client = await metaClient;
+        await client.deleteCampaign(campaign_id);
 
         const response = {
           success: true,
@@ -371,6 +377,7 @@ export function registerCampaignTools(
     ListAdSetsSchema.shape,
     async ({ campaign_id, account_id, status, limit, after }) => {
       try {
+        const client = await metaClient;
         if (!campaign_id && !account_id) {
           return {
             content: [
@@ -383,7 +390,7 @@ export function registerCampaignTools(
           };
         }
 
-        const result = await metaClient.getAdSets({
+        const result = await client.getAdSets({
           campaignId: campaign_id,
           accountId: account_id,
           status,
@@ -450,7 +457,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape, // Reusing for campaign_id param
     async ({ campaign_id }) => {
       try {
-        const campaign = await metaClient.getCampaign(campaign_id);
+        const client = await metaClient;
+        const campaign = await client.getCampaign(campaign_id);
 
         const readinessCheck = {
           campaign_id,
@@ -595,6 +603,7 @@ export function registerCampaignTools(
       recurring_budget_semantics,
     }) => {
       try {
+        const client = await metaClient;
         if (daily_budget && lifetime_budget) {
           return {
             content: [
@@ -734,7 +743,7 @@ export function registerCampaignTools(
         // Handle promoted_object - check if it's required for this campaign
         let campaign;
         try {
-          campaign = await metaClient.getCampaign(campaign_id);
+          campaign = await client.getCampaign(campaign_id);
         } catch (error) {
           console.error("Failed to fetch campaign details:", error);
           return {
@@ -875,7 +884,7 @@ export function registerCampaignTools(
         console.error("For campaign ID:", campaign_id);
         console.error("Campaign objective:", campaign.objective);
 
-        const result = await metaClient.createAdSet(campaign_id, adSetData);
+        const result = await client.createAdSet(campaign_id, adSetData);
 
         const response = {
           success: true,
@@ -987,6 +996,7 @@ export function registerCampaignTools(
     ListAdSetsSchema.shape,
     async ({ campaign_id, account_id, status, limit, after }) => {
       try {
+        const client = await metaClient;
         if (!campaign_id && !account_id) {
           return {
             content: [
@@ -999,7 +1009,7 @@ export function registerCampaignTools(
           };
         }
 
-        const result = await metaClient.getAds({
+        const result = await client.getAds({
           campaignId: campaign_id,
           accountId: account_id,
           status,
@@ -1061,7 +1071,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape,
     async ({ campaign_id }) => {
       try {
-        const campaign = await metaClient.getCampaign(campaign_id);
+        const client = await metaClient;
+        const campaign = await client.getCampaign(campaign_id);
 
         const response = {
           campaign: {
@@ -1112,7 +1123,8 @@ export function registerCampaignTools(
     DeleteCampaignSchema.shape, // Reusing for campaign_id param
     async ({ campaign_id }) => {
       try {
-        const result = await metaClient.getAdSets({
+        const client = await metaClient;
+        const result = await client.getAdSets({
           campaignId: campaign_id,
           limit: 50,
         });
@@ -1460,6 +1472,7 @@ export function registerCampaignTools(
     VerifyAccountSetupSchema.shape,
     async ({ account_id }) => {
       try {
+        const client = await metaClient;
         const verification = {
           account_id,
           setup_status: "checking",
@@ -1475,7 +1488,7 @@ export function registerCampaignTools(
 
         // Check account access
         try {
-          const account = await metaClient.getAdAccount(account_id);
+          const account = await client.getAdAccount(account_id);
           verification.components.account_access = {
             status: "success",
             details: `Account "${account.name}" accessible`,

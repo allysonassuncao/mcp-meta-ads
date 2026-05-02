@@ -6,7 +6,7 @@ import { MetaApiClient } from "../meta-client.js";
 
 export function registerInsightsResources(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // Campaign Performance Resource
   server.resource(
@@ -167,10 +167,11 @@ export function registerInsightsResources(
     }),
     async (uri, { account_id }) => {
       try {
+        const client = await metaClient;
         const [campaigns, accountInsights] = await Promise.all([
-          metaClient.getCampaigns(account_id as string, { limit: 50 }),
-          metaClient.getInsights(
-            metaClient.authManager.getAccountId(account_id as string),
+          client.getCampaigns(account_id as string, { limit: 50 }),
+          client.getInsights(
+            client.authManager.getAccountId(account_id as string),
             {
               level: "account",
               date_preset: "last_30d",

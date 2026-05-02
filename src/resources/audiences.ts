@@ -6,7 +6,7 @@ import { MetaApiClient } from "../meta-client.js";
 
 export function registerAudienceResources(
   server: McpServer,
-  metaClient: MetaApiClient
+  metaClient: any
 ) {
   // Audiences Overview Resource
   server.resource(
@@ -14,7 +14,8 @@ export function registerAudienceResources(
     new ResourceTemplate("meta://audiences/{account_id}", { list: undefined }),
     async (uri, { account_id }) => {
       try {
-        const result = await metaClient.getCustomAudiences(
+        const client = await metaClient;
+        const result = await client.getCustomAudiences(
           account_id as string,
           {
             limit: 100,

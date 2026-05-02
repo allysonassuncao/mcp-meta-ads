@@ -14,7 +14,7 @@ export function setupOAuthTools(server: McpServer, authManager: AuthManager) {
 
 export function registerOAuthTools(
   server: McpServer,
-  authManager: AuthManager
+  authManager: any
 ) {
   // Generate OAuth Authorization URL Tool
   server.tool(
@@ -22,7 +22,8 @@ export function registerOAuthTools(
     GenerateAuthUrlSchema.shape,
     async ({ scopes, state }) => {
       try {
-        const authUrl = authManager.generateAuthUrl(scopes, state);
+        const manager = await authManager;
+        const authUrl = manager.generateAuthUrl(scopes, state);
 
         const response = {
           success: true,
@@ -71,7 +72,8 @@ export function registerOAuthTools(
     ExchangeCodeSchema.shape,
     async ({ code }) => {
       try {
-        const result = await authManager.exchangeCodeForToken(code);
+        const manager = await authManager;
+        const result = await manager.exchangeCodeForToken(code);
 
         const response = {
           success: true,
@@ -126,7 +128,8 @@ export function registerOAuthTools(
     RefreshTokenSchema.shape,
     async ({ short_lived_token }) => {
       try {
-        const result = await authManager.exchangeForLongLivedToken(
+        const manager = await authManager;
+        const result = await manager.exchangeForLongLivedToken(
           short_lived_token
         );
 
@@ -185,7 +188,8 @@ export function registerOAuthTools(
     GenerateSystemTokenSchema.shape,
     async ({ system_user_id, scopes, expiring_token }) => {
       try {
-        const result = await authManager.generateSystemUserToken(
+        const manager = await authManager;
+        const result = await manager.generateSystemUserToken(
           system_user_id,
           scopes,
           expiring_token
@@ -246,7 +250,8 @@ export function registerOAuthTools(
   // Get Token Info Tool
   server.tool("get_token_info", {}, async () => {
     try {
-      const tokenInfo = await authManager.getTokenInfo();
+      const manager = await authManager;
+      const tokenInfo = await manager.getTokenInfo();
 
       const response = {
         token_info: tokenInfo,
@@ -293,8 +298,9 @@ export function registerOAuthTools(
   // Validate Current Token Tool
   server.tool("validate_token", {}, async () => {
     try {
-      const isValid = await authManager.validateToken();
-      const tokenInfo = await authManager.getTokenInfo();
+      const manager = await authManager;
+      const isValid = await manager.validateToken();
+      const tokenInfo = await manager.getTokenInfo();
 
       const response = {
         is_valid: isValid,
