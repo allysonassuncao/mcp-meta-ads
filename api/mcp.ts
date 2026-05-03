@@ -12,6 +12,36 @@ import { registerInsightsResources } from "../src/resources/insights.js";
 import { registerAudienceResources } from "../src/resources/audiences.js";
 
 const handler = async (req: Request) => {
+  const origin = req.headers.get("origin");
+  const allowedOrigins = [
+    "https://app.usemakecrm.com.br",
+    "https://usermakecrm.com.br",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:8080"
+  ];
+
+  const isAllowedOrigin = origin && (allowedOrigins.includes(origin) || origin.endsWith(".usemakecrm.com.br"));
+
+  const corsHeaders: Record<string, string> = {
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+    "Access-Control-Allow-Credentials": "true",
+  };
+
+  if (isAllowedOrigin) {
+    corsHeaders["Access-Control-Allow-Origin"] = origin!;
+  }
+
+  // 0. Handle Preflight (OPTIONS)
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
+  }
+
   const authHeader = req.headers.get("authorization");
   const acceptHeader = req.headers.get("accept") || "";
 
@@ -27,7 +57,7 @@ const handler = async (req: Request) => {
     registerAudienceTools(server, metaClientPromise);
     registerCreativeTools(server, metaClientPromise);
     registerOAuthTools(server, authManagerPromise);
-    
+
     registerCampaignResources(server, metaClientPromise);
     registerInsightsResources(server, metaClientPromise);
     registerAudienceResources(server, metaClientPromise);
@@ -81,13 +111,18 @@ const handler = async (req: Request) => {
           jsonrpc: "2.0",
           result: { tools },
           id: body.id
-        }), { headers: { "Content-Type": "application/json" } });
+        }), {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
+          }
+        });
       }
 
       if (body.method === "tools/call") {
         const toolName = body.params?.name;
         const tool = (server as any)._registeredTools[toolName];
-        
+
         if (!tool) {
           throw new Error(`Tool not found: ${toolName}`);
         }
@@ -103,7 +138,12 @@ const handler = async (req: Request) => {
           jsonrpc: "2.0",
           result,
           id: body.id
-        }), { headers: { "Content-Type": "application/json" } });
+        }), {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
+          }
+        });
       }
 
       // Fallback for other methods
@@ -113,12 +153,16 @@ const handler = async (req: Request) => {
         jsonrpc: "2.0",
         error: { code: -32000, message: error instanceof Error ? error.message : "Unknown error" },
         id: null
-      }), { headers: { "Content-Type": "application/json" } });
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
     }
   }
 
-  // 2. Handle Standard MCP (SSE mode) via Vercel Adapter
-  return createMcpHandler(
+  const response = await createMcpHandler(
     (server) => {
       const metaClientPromise = (async () => {
         if (!authHeader) throw new Error("Authentication required");
@@ -138,6 +182,16 @@ const handler = async (req: Request) => {
       verboseLogs: true,
     }
   )(req);
+
+  // Add CORS headers to the adapter response
+  if (isAllowedOrigin) {
+    response.headers.set("Access-Control-Allow-Origin", origin!);
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+  }
+
+  return response;
 };
 
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST, handler as OPTIONS };
