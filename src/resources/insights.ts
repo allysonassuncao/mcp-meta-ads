@@ -16,8 +16,9 @@ export function registerInsightsResources(
     }),
     async (uri: any, { campaign_id }: any) => {
       try {
+        const client = await metaClient;
         const [insights7d, insights30d, insights90d] = await Promise.all([
-          metaClient.getInsights(campaign_id as string, {
+          client.getInsights(campaign_id as string, {
             level: "campaign",
             date_preset: "last_7d",
             fields: [
@@ -33,7 +34,7 @@ export function registerInsightsResources(
               "cost_per_action_type",
             ],
           }),
-          metaClient.getInsights(campaign_id as string, {
+          client.getInsights(campaign_id as string, {
             level: "campaign",
             date_preset: "last_30d",
             fields: [
@@ -49,7 +50,7 @@ export function registerInsightsResources(
               "cost_per_action_type",
             ],
           }),
-          metaClient.getInsights(campaign_id as string, {
+          client.getInsights(campaign_id as string, {
             level: "campaign",
             date_preset: "last_90d",
             fields: [

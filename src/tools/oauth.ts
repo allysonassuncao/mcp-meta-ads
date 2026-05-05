@@ -38,7 +38,7 @@ export function registerOAuthTools(
           security_note: state
             ? "State parameter included for CSRF protection"
             : "Consider adding a state parameter for additional security",
-          redirect_uri: authManager["config"].redirectUri,
+          redirect_uri: manager["config"].redirectUri,
         };
 
         return {
@@ -145,9 +145,9 @@ export function registerOAuthTools(
             lifetime: "Approximately 60 days",
           },
           token_management: {
-            auto_refresh_enabled: authManager["config"].autoRefresh || false,
+            auto_refresh_enabled: manager["config"].autoRefresh || false,
             current_expiration:
-              authManager["config"].tokenExpiration?.toISOString(),
+              manager["config"].tokenExpiration?.toISOString(),
             refresh_recommendation:
               "Set up automatic refresh or manually refresh before expiration",
           },
@@ -256,19 +256,19 @@ export function registerOAuthTools(
         token_info: tokenInfo,
         current_config: {
           has_app_credentials: !!(
-            authManager["config"].appId && authManager["config"].appSecret
+            manager["config"].appId && manager["config"].appSecret
           ),
-          has_redirect_uri: !!authManager["config"].redirectUri,
-          auto_refresh_enabled: !!authManager["config"].autoRefresh,
+          has_redirect_uri: !!manager["config"].redirectUri,
+          auto_refresh_enabled: !!manager["config"].autoRefresh,
           token_expiration:
-            authManager["config"].tokenExpiration?.toISOString(),
+            manager["config"].tokenExpiration?.toISOString(),
         },
         token_status: {
           is_valid: tokenInfo.isValid,
-          is_expiring_soon: authManager.isTokenExpiring(60), // 1 hour buffer
-          requires_refresh: authManager.isTokenExpiring(5), // 5 minute buffer
+          is_expiring_soon: manager.isTokenExpiring(60), // 1 hour buffer
+          requires_refresh: manager.isTokenExpiring(5), // 5 minute buffer
         },
-        recommendations: generateTokenRecommendations(tokenInfo, authManager),
+        recommendations: generateTokenRecommendations(tokenInfo, manager),
       };
 
       return {
@@ -307,11 +307,11 @@ export function registerOAuthTools(
         token_details: tokenInfo,
         health_check: {
           api_connectivity: isValid,
-          token_format: !!authManager.getAccessToken(),
+          token_format: !!manager.getAccessToken(),
           permissions: tokenInfo.scopes || [],
         },
         diagnostics: {
-          token_length: authManager.getAccessToken().length,
+          token_length: manager.getAccessToken().length,
           expires_at: tokenInfo.expiresAt?.toISOString(),
           user_id: tokenInfo.userId,
           app_id: tokenInfo.appId,

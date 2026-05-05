@@ -53,7 +53,8 @@ export function registerAnalyticsTools(
           params.breakdowns = breakdowns;
         }
 
-        const result = await metaClient.getInsights(object_id, params);
+        const client = await metaClient;
+        const result = await client.getInsights(object_id, params);
 
         const insights = result.data.map((insight: any) => ({
           date_start: insight.date_start,
@@ -158,7 +159,7 @@ export function registerAnalyticsTools(
 
             try {
               if (level === "campaign") {
-                const campaign = await metaClient.getCampaign(objectId);
+                const campaign = await client.getCampaign(objectId);
                 objectName = campaign.name;
               }
               // Could add similar logic for ad sets and ads
@@ -257,7 +258,8 @@ export function registerAnalyticsTools(
           params.breakdowns = breakdowns;
         }
 
-        const result = await metaClient.getInsights(object_id, params);
+        const client = await metaClient;
+        const result = await client.getInsights(object_id, params);
 
         let exportData: string;
         let mimeType: string;
@@ -334,7 +336,8 @@ export function registerAnalyticsTools(
           ],
         };
 
-        const result = await metaClient.getInsights(
+        const client = await metaClient;
+        const result = await client.getInsights(
           params.object_id,
           campaignParams
         );
@@ -343,7 +346,7 @@ export function registerAnalyticsTools(
         // Get campaign details
         let campaignDetails;
         try {
-          campaignDetails = await metaClient.getCampaign(params.object_id);
+          campaignDetails = await client.getCampaign(params.object_id);
         } catch {
           campaignDetails = { id: params.object_id, name: "Unknown Campaign" };
         }
@@ -403,7 +406,8 @@ export function registerAnalyticsTools(
           breakdowns: params.breakdowns || ["action_attribution_windows"],
         };
 
-        const result = await metaClient.getInsights(
+        const client = await metaClient;
+        const result = await client.getInsights(
           params.object_id,
           attributionParams
         );

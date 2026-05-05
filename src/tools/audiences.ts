@@ -114,7 +114,8 @@ export function registerAudienceTools(
         if (retention_days) audienceData.retention_days = retention_days;
         if (rule) audienceData.rule = rule;
 
-        const result = await metaClient.createCustomAudience(
+        const client = await metaClient;
+        const result = await client.createCustomAudience(
           account_id,
           audienceData
         );
@@ -196,7 +197,8 @@ export function registerAudienceTools(
 
         if (description) audienceData.description = description;
 
-        const result = await metaClient.createLookalikeAudience(
+        const client = await metaClient;
+        const result = await client.createLookalikeAudience(
           account_id,
           audienceData
         );
@@ -252,7 +254,8 @@ export function registerAudienceTools(
     EstimateAudienceSizeSchema.shape,
     async ({ account_id, targeting, optimization_goal }) => {
       try {
-        const estimate = await metaClient.estimateAudienceSize(
+        const client = await metaClient;
+        const estimate = await client.estimateAudienceSize(
           account_id,
           targeting,
           optimization_goal

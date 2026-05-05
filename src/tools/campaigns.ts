@@ -1503,7 +1503,8 @@ export function registerCampaignTools(
 
         // Check for active campaigns
         try {
-          const campaigns = await metaClient.getCampaigns(account_id, {
+          const clientForCampaigns = await metaClient;
+          const campaigns = await clientForCampaigns.getCampaigns(account_id, {
             limit: 10,
           });
           verification.components.active_campaigns = {
@@ -1527,7 +1528,8 @@ export function registerCampaignTools(
 
         // Check payment methods (this might require additional permissions)
         try {
-          const funding = await metaClient.getFundingSources(account_id);
+          const clientForFunding = await metaClient;
+          const funding = await clientForFunding.getFundingSources(account_id);
           verification.components.payment_method = {
             status: funding.length > 0 ? "success" : "warning",
             details:

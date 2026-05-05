@@ -302,7 +302,8 @@ export function registerCreativeTools(
           JSON.stringify(creativeData, null, 2)
         );
 
-        const result = await metaClient.createAdCreative(
+        const client = await metaClient;
+        const result = await client.createAdCreative(
           account_id,
           creativeData
         );
@@ -1977,7 +1978,8 @@ export function registerCreativeTools(
         console.log("Image Name:", image_name);
 
         // Use the MetaApiClient to upload the image
-        const uploadResult = await metaClient.uploadImageFromUrl(
+        const client = await metaClient;
+        const uploadResult = await client.uploadImageFromUrl(
           account_id,
           image_url,
           image_name
