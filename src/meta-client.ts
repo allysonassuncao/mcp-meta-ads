@@ -190,9 +190,10 @@ export class MetaApiClient {
     const { status, fields, ...paginationParams } = params;
 
     const queryParams: Record<string, any> = {
-      fields:
-        fields?.join(",") ||
-        "id,name,objective,status,effective_status,created_time,updated_time,start_time,stop_time,budget_remaining,daily_budget,lifetime_budget",
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "id,name,objective,status,effective_status,created_time,updated_time,start_time,stop_time,budget_remaining,daily_budget,lifetime_budget",
       ...paginationParams,
     };
 
@@ -301,9 +302,10 @@ export class MetaApiClient {
     }
 
     const queryParams: Record<string, any> = {
-      fields:
-        fields?.join(",") ||
-        "id,name,campaign_id,status,effective_status,created_time,updated_time,start_time,end_time,daily_budget,lifetime_budget,bid_amount,billing_event,optimization_goal",
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "id,name,campaign_id,status,effective_status,created_time,updated_time,start_time,end_time,daily_budget,lifetime_budget,bid_amount,billing_event,optimization_goal",
       ...paginationParams,
     };
 
@@ -458,15 +460,19 @@ export class MetaApiClient {
       after?: string;
     } = {}
   ): Promise<PaginatedResult<AdInsights>> {
+    const { fields, breakdowns, ...otherParams } = params;
     const queryParams: Record<string, any> = {
-      fields:
-        params.fields?.join(",") ||
-        "impressions,clicks,spend,reach,frequency,ctr,cpc,cpm,actions,cost_per_action_type",
-      ...params,
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "impressions,clicks,spend,reach,frequency,ctr,cpc,cpm,actions,cost_per_action_type",
+      ...otherParams,
     };
 
-    if (params.time_range) {
-      queryParams.time_range = params.time_range;
+    if (breakdowns) {
+      queryParams.breakdowns = Array.isArray(breakdowns)
+        ? breakdowns.join(",")
+        : breakdowns;
     }
 
     const query = this.buildQueryString(queryParams);
@@ -486,9 +492,10 @@ export class MetaApiClient {
     const { fields, ...paginationParams } = params;
 
     const queryParams: Record<string, any> = {
-      fields:
-        fields?.join(",") ||
-        "id,name,description,subtype,approximate_count,data_source,retention_days,creation_time,operation_status",
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "id,name,description,subtype,approximate_count,data_source,retention_days,creation_time,operation_status",
       ...paginationParams,
     };
 
@@ -565,9 +572,10 @@ export class MetaApiClient {
     const { fields, ...paginationParams } = params;
 
     const queryParams: Record<string, any> = {
-      fields:
-        fields?.join(",") ||
-        "id,name,title,body,image_url,video_id,call_to_action,object_story_spec",
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "id,name,title,body,image_url,video_id,call_to_action,object_story_spec",
       ...paginationParams,
     };
 
@@ -701,9 +709,10 @@ export class MetaApiClient {
     }
 
     const queryParams: Record<string, any> = {
-      fields:
-        fields?.join(",") ||
-        "id,name,adset_id,campaign_id,status,effective_status,created_time,updated_time,creative",
+      fields: Array.isArray(fields)
+        ? fields.join(",")
+        : fields ||
+          "id,name,adset_id,campaign_id,status,effective_status,created_time,updated_time,creative",
       ...paginationParams,
     };
 
