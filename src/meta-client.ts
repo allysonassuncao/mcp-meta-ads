@@ -474,16 +474,27 @@ export class MetaApiClient {
       "cost_per_action_type",
     ];
 
-    // Add level-specific name fields to defaults
-    if (params.level === "campaign") defaultFields.push("campaign_name");
-    if (params.level === "adset") defaultFields.push("adset_name");
-    if (params.level === "ad") defaultFields.push("ad_name");
-    if (params.level === "account") defaultFields.push("account_name");
+    // Determine level-specific fields that should always be present
+    const levelFields: string[] = [];
+    if (params.level === "campaign") levelFields.push("campaign_name", "campaign_id");
+    else if (params.level === "adset") levelFields.push("adset_name", "adset_id");
+    else if (params.level === "ad") levelFields.push("ad_name", "ad_id");
+    else if (params.level === "account") levelFields.push("account_name", "account_id");
+
+    let finalFields: string;
+    if (fields) {
+      // If user provided fields, merge them with levelFields
+      const userFieldsArr = Array.isArray(fields) ? fields : fields.split(",").map(f => f.trim());
+      const mergedFields = Array.from(new Set([...levelFields, ...userFieldsArr]));
+      finalFields = mergedFields.join(",");
+    } else {
+      // Otherwise use defaultFields merged with levelFields
+      const mergedFields = Array.from(new Set([...levelFields, ...defaultFields]));
+      finalFields = mergedFields.join(",");
+    }
 
     const queryParams: Record<string, any> = {
-      fields: Array.isArray(fields)
-        ? fields.join(",")
-        : fields || defaultFields.join(","),
+      fields: finalFields,
       ...otherParams,
     };
 
