@@ -461,11 +461,29 @@ export class MetaApiClient {
     } = {}
   ): Promise<PaginatedResult<AdInsights>> {
     const { fields, breakdowns, ...otherParams } = params;
+    const defaultFields = [
+      "impressions",
+      "clicks",
+      "spend",
+      "reach",
+      "frequency",
+      "ctr",
+      "cpc",
+      "cpm",
+      "actions",
+      "cost_per_action_type",
+    ];
+
+    // Add level-specific name fields to defaults
+    if (params.level === "campaign") defaultFields.push("campaign_name");
+    if (params.level === "adset") defaultFields.push("adset_name");
+    if (params.level === "ad") defaultFields.push("ad_name");
+    if (params.level === "account") defaultFields.push("account_name");
+
     const queryParams: Record<string, any> = {
       fields: Array.isArray(fields)
         ? fields.join(",")
-        : fields ||
-          "impressions,clicks,spend,reach,frequency,ctr,cpc,cpm,actions,cost_per_action_type",
+        : fields || defaultFields.join(","),
       ...otherParams,
     };
 

@@ -57,25 +57,14 @@ export function registerAnalyticsTools(
         const result = await client.getInsights(object_id, params);
 
         const insights = result.data.map((insight: any) => ({
-          date_start: insight.date_start,
-          date_stop: insight.date_stop,
+          ...insight,
+          // Ensure core metrics are present even if not explicitly requested
           impressions: insight.impressions,
           clicks: insight.clicks,
           spend: insight.spend,
-          reach: insight.reach,
-          frequency: insight.frequency,
           ctr: insight.ctr,
           cpc: insight.cpc,
           cpm: insight.cpm,
-          cpp: insight.cpp,
-          actions: insight.actions,
-          cost_per_action_type: insight.cost_per_action_type,
-          video_views: insight.video_views,
-          video_view_time: insight.video_view_time,
-          account_id: insight.account_id,
-          campaign_id: insight.campaign_id,
-          adset_id: insight.adset_id,
-          ad_id: insight.ad_id,
         }));
 
         // Calculate summary statistics
