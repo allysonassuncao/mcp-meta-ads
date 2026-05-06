@@ -141,7 +141,7 @@ export class MetaApiClient {
     const urlParams = new URLSearchParams();
 
     for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null && value !== "") {
         if (Array.isArray(value)) {
           urlParams.set(key, JSON.stringify(value));
         } else if (typeof value === "object") {
@@ -475,12 +475,34 @@ export class MetaApiClient {
         : breakdowns;
     }
 
-    const query = this.buildQueryString(queryParams);
-    const response = await this.makeRequest<MetaApiResponse<AdInsights>>(
-      `${objectId}/insights?${query}`
-    );
+    // Ensure account IDs have the 'act_' prefix if needed
+    let finalObjectId = objectId;
+    if (params.level === "account" && !objectId.startsWith("act_")) {
+      finalObjectId = `act_${objectId}`;
+    }
 
-    return PaginationHelper.parsePaginatedResponse(response);
+    const query = this.buildQueryString(queryParams);
+    try {
+      const response = await this.makeRequest<MetaApiResponse<AdInsights>>(
+        `${finalObjectId}/insights?${query}`,
+        "GET",
+        null,
+        finalObjectId.startsWith("act_") ? finalObjectId : undefined
+      );
+
+      return PaginationHelper.parsePaginatedResponse(response);
+    } catch (error) {
+      // Self-healing: if it's a numeric ID missing 'act_' prefix and failed with field error
+      if (
+        error instanceof Error &&
+        error.message.includes("(#100)") &&
+        !finalObjectId.startsWith("act_") &&
+        /^\d+$/.test(finalObjectId)
+      ) {
+        return this.getInsights(`act_${finalObjectId}`, params);
+      }
+      throw error;
+    }
   }
 
   // Custom Audience Methods

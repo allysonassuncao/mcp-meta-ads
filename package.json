@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsx src/index.ts",
+    "dev:mcp": "tsx src/index.ts",
     "dev:vercel": "vercel dev",
     "test": "jest",
     "test:tools": "tsx test-tools.js",
@@ -54,7 +54,9 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vercel": "^53.1.1",
+    "yarn": "^1.22.22"
   },
   "engines": {
     "node": "22.x"
