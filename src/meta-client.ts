@@ -463,6 +463,9 @@ export class MetaApiClient {
       after?: string;
     } = {}
   ): Promise<PaginatedResult<AdInsights>> {
+    if (!objectId) {
+      throw new Error("object_id is required for getInsights");
+    }
     const { fields, breakdowns, ...otherParams } = params;
     const defaultFields = [
       "impressions",
@@ -652,14 +655,33 @@ export class MetaApiClient {
 
   async getAdCreative(creativeId: string): Promise<AdCreative> {
     const queryParams = {
-      fields: "id,name,title,body,image_url,thumbnail_url,video_id,call_to_action,object_story_spec,url_tags,instagram_permalink_url",
+      fields: "id,name,image_url,thumbnail_url,video_id,call_to_action,object_story_spec,url_tags,instagram_permalink_url",
     };
 
     const query = this.buildQueryString(queryParams);
-    return this.makeRequest<AdCreative>(
-      `${creativeId}?${query}`,
-      "GET"
-    );
+    try {
+      return await this.makeRequest<AdCreative>(
+        `${creativeId}?${query}`,
+        "GET"
+      );
+    } catch (error) {
+      // Self-healing: if it fails with field error, try again with minimal fields
+      if (error instanceof Error && error.message.includes("(#100)")) {
+        try {
+          return await this.makeRequest<AdCreative>(
+            `${creativeId}?fields=id,name,object_story_spec`,
+            "GET"
+          );
+        } catch (retryError) {
+          // If even object_story_spec fails, try the absolute minimum
+          return this.makeRequest<AdCreative>(
+            `${creativeId}?fields=id,name`,
+            "GET"
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   async createAdCreative(

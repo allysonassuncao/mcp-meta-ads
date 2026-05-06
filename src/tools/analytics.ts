@@ -307,8 +307,13 @@ export function registerAnalyticsTools(
   server.tool(
     "get_campaign_performance",
     GetInsightsSchema.shape,
-    async (params) => {
+    async (params: any) => {
       try {
+        const objectId = params.object_id || params.campaign_id;
+        if (!objectId) {
+          throw new Error("campaign_id or object_id is required");
+        }
+
         // Set level to campaign and add campaign-specific fields
         const campaignParams = {
           ...params,
@@ -326,10 +331,7 @@ export function registerAnalyticsTools(
         };
 
         const client = await metaClient;
-        const result = await client.getInsights(
-          params.object_id,
-          campaignParams
-        );
+        const result = await client.getInsights(objectId, campaignParams);
         const summary = calculateSummaryMetrics(result.data);
 
         // Get campaign details

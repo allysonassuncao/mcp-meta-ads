@@ -344,7 +344,12 @@ export const CreateAdSetSchema = z.object({
 export const GetInsightsSchema = z.object({
   object_id: z
     .string()
+    .optional()
     .describe("ID of campaign, ad set, or ad to get insights for"),
+  campaign_id: z
+    .string()
+    .optional()
+    .describe("Optional alias for object_id when querying a campaign"),
   level: z
     .enum(["account", "campaign", "adset", "ad"])
     .describe("Level of insights to retrieve"),
