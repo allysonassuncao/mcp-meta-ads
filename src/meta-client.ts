@@ -652,7 +652,7 @@ export class MetaApiClient {
 
   async getAdCreative(creativeId: string): Promise<AdCreative> {
     const queryParams = {
-      fields: "id,name,title,body,image_url,video_id,call_to_action,object_story_spec,url_tags",
+      fields: "id,name,title,body,image_url,thumbnail_url,video_id,call_to_action,object_story_spec,url_tags,instagram_permalink_url",
     };
 
     const query = this.buildQueryString(queryParams);

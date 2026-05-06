@@ -78,12 +78,14 @@ export interface AdCreative {
   title?: string;
   body?: string;
   image_url?: string;
+  thumbnail_url?: string;
   video_id?: string;
   call_to_action?: {
     type: string;
     value?: any;
   };
   object_story_spec?: any;
+  instagram_permalink_url?: string;
   url_tags?: string;
 }
 
