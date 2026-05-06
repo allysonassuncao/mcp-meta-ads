@@ -650,6 +650,18 @@ export class MetaApiClient {
     return PaginationHelper.parsePaginatedResponse(response);
   }
 
+  async getAdCreative(creativeId: string): Promise<AdCreative> {
+    const queryParams = {
+      fields: "id,name,title,body,image_url,video_id,call_to_action,object_story_spec,url_tags",
+    };
+
+    const query = this.buildQueryString(queryParams);
+    return this.makeRequest<AdCreative>(
+      `${creativeId}?${query}`,
+      "GET"
+    );
+  }
+
   async createAdCreative(
     accountId: string,
     creativeData: {

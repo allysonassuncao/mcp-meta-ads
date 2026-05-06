@@ -692,17 +692,28 @@ export function registerCreativeTools(
         const mappedFormat = formatMap[normalizedFormat] || ad_format.toUpperCase().replace(/\s+/g, "_");
 
         const client = await metaClient;
-        const result = await client.generateAdPreview(
-          creative_id,
-          mappedFormat,
-          product_item_ids
-        );
+        
+        // Fetch creative details and preview in parallel
+        const [creativeDetails, previewResult] = await Promise.all([
+          client.getAdCreative(creative_id),
+          client.generateAdPreview(creative_id, mappedFormat, product_item_ids)
+        ]);
 
         const response = {
           success: true,
           creative_id,
           ad_format: mappedFormat,
-          preview_html: result.body,
+          preview_html: previewResult.body,
+          creative_details: {
+            name: creativeDetails.name,
+            title: creativeDetails.title,
+            body: creativeDetails.body,
+            image_url: creativeDetails.image_url,
+            video_id: creativeDetails.video_id,
+            call_to_action: creativeDetails.call_to_action,
+            object_story_spec: creativeDetails.object_story_spec,
+            url_tags: creativeDetails.url_tags,
+          },
           product_item_ids,
           notes: [
             "The preview shows how the ad will appear in the selected format",
