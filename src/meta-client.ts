@@ -938,7 +938,7 @@ export class MetaApiClient {
   async generateAdPreview(
     creativeId: string,
     adFormat: string,
-    productItemIds?: string[]
+    productItemIds?: string | string[]
   ): Promise<{ body: string }> {
     const queryParams: Record<string, any> = {
       ad_format: adFormat,
@@ -949,9 +949,15 @@ export class MetaApiClient {
     }
 
     const query = this.buildQueryString(queryParams);
-    return this.makeRequest<{ body: string }>(
+    const response = await this.makeRequest<{ data: Array<{ body: string }> }>(
       `${creativeId}/previews?${query}`
     );
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0];
+    }
+
+    throw new Error(`No preview generated for format: ${adFormat}`);
   }
 
   // Helper method to get account ID for rate limiting

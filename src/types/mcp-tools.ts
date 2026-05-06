@@ -781,22 +781,14 @@ export const CreateAdCreativeSchema = z.object({
 export const PreviewAdSchema = z.object({
   creative_id: z.string().describe("Creative ID to preview"),
   ad_format: z
-    .enum([
-      "DESKTOP_FEED_STANDARD",
-      "MOBILE_FEED_STANDARD",
-      "MOBILE_FEED_BASIC",
-      "MOBILE_BANNER",
-      "MOBILE_MEDIUM_RECTANGLE",
-      "MOBILE_FULLWIDTH",
-      "MOBILE_INTERSTITIAL",
-      "INSTAGRAM_STANDARD",
-      "INSTAGRAM_STORY",
-    ])
-    .describe("Ad format for preview"),
+    .string()
+    .describe(
+      "Format/placement to preview. Supported: 'feed', 'stories', 'reels', 'instagram', 'marketplace', 'messenger', 'right_column'."
+    ),
   product_item_ids: z
-    .array(z.string())
+    .string()
     .optional()
-    .describe("Product item IDs for dynamic ads"),
+    .describe("Optional comma-separated list of product item IDs for dynamic ads"),
 });
 
 // Enhanced Creative Tool Schemas

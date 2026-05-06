@@ -669,17 +669,39 @@ export function registerCreativeTools(
     PreviewAdSchema.shape,
     async ({ creative_id, ad_format, product_item_ids }: any) => {
       try {
+        // Map common user-friendly formats to Meta constants
+        const formatMap: Record<string, string> = {
+          feed: "MOBILE_FEED_STANDARD",
+          mobile_feed: "MOBILE_FEED_STANDARD",
+          desktop_feed: "DESKTOP_FEED_STANDARD",
+          stories: "FACEBOOK_STORY_MOBILE",
+          facebook_story: "FACEBOOK_STORY_MOBILE",
+          instagram: "INSTAGRAM_STANDARD",
+          instagram_feed: "INSTAGRAM_STANDARD",
+          instagram_story: "INSTAGRAM_STORY",
+          instagram_reels: "INSTAGRAM_REELS",
+          reels: "INSTAGRAM_REELS",
+          facebook_reels: "FACEBOOK_REELS_MOBILE",
+          right_column: "RIGHT_COLUMN_STANDARD",
+          marketplace: "MARKETPLACE_MOBILE",
+          messenger: "MESSENGER_MOBILE_INBOX_MEDIA",
+          audience_network: "MOBILE_BANNER",
+        };
+
+        const normalizedFormat = ad_format.toLowerCase().trim();
+        const mappedFormat = formatMap[normalizedFormat] || ad_format.toUpperCase().replace(/\s+/g, "_");
+
         const client = await metaClient;
         const result = await client.generateAdPreview(
           creative_id,
-          ad_format,
+          mappedFormat,
           product_item_ids
         );
 
         const response = {
           success: true,
           creative_id,
-          ad_format,
+          ad_format: mappedFormat,
           preview_html: result.body,
           product_item_ids,
           notes: [
