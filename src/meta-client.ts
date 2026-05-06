@@ -184,7 +184,10 @@ export class MetaApiClient {
   // Campaign Methods
   async getCampaigns(
     accountId: string,
-    params: PaginationParams & { status?: string | string[]; fields?: string[] } = {}
+    params: PaginationParams & {
+      status?: string | string[];
+      fields?: string | string[];
+    } = {}
   ): Promise<PaginatedResult<Campaign>> {
     const formattedAccountId = this.auth.getAccountId(accountId);
     const { status, fields, ...paginationParams } = params;
@@ -285,7 +288,7 @@ export class MetaApiClient {
       campaignId?: string;
       accountId?: string;
       status?: string | string[];
-      fields?: string[];
+      fields?: string | string[];
     } = {}
   ): Promise<PaginatedResult<AdSet>> {
     const { campaignId, accountId, status, fields, ...paginationParams } =
@@ -454,8 +457,8 @@ export class MetaApiClient {
       level?: "account" | "campaign" | "adset" | "ad";
       date_preset?: string;
       time_range?: { since: string; until: string };
-      fields?: string[];
-      breakdowns?: string[];
+      fields?: string | string[];
+      breakdowns?: string | string[];
       limit?: number;
       after?: string;
     } = {}
@@ -484,8 +487,14 @@ export class MetaApiClient {
     let finalFields: string;
     if (fields) {
       // If user provided fields, merge them with levelFields
-      const userFieldsArr = Array.isArray(fields) ? fields : fields.split(",").map(f => f.trim());
-      const mergedFields = Array.from(new Set([...levelFields, ...userFieldsArr]));
+      const userFieldsArr = Array.isArray(fields)
+        ? fields
+        : typeof fields === "string"
+        ? fields.split(",").map((f: string) => f.trim())
+        : [];
+      const mergedFields = Array.from(
+        new Set([...levelFields, ...userFieldsArr])
+      );
       finalFields = mergedFields.join(",");
     } else {
       // Otherwise use defaultFields merged with levelFields
@@ -537,7 +546,7 @@ export class MetaApiClient {
   // Custom Audience Methods
   async getCustomAudiences(
     accountId: string,
-    params: PaginationParams & { fields?: string[] } = {}
+    params: PaginationParams & { fields?: string | string[] } = {}
   ): Promise<PaginatedResult<CustomAudience>> {
     const formattedAccountId = this.auth.getAccountId(accountId);
     const { fields, ...paginationParams } = params;
@@ -617,7 +626,7 @@ export class MetaApiClient {
   // Creative Methods
   async getAdCreatives(
     accountId: string,
-    params: PaginationParams & { fields?: string[] } = {}
+    params: PaginationParams & { fields?: string | string[] } = {}
   ): Promise<PaginatedResult<AdCreative>> {
     const formattedAccountId = this.auth.getAccountId(accountId);
     const { fields, ...paginationParams } = params;
@@ -733,7 +742,7 @@ export class MetaApiClient {
       campaignId?: string;
       accountId?: string;
       status?: string | string[];
-      fields?: string[];
+      fields?: string | string[];
     } = {}
   ): Promise<PaginatedResult<Ad>> {
     const {
