@@ -2,8 +2,6 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-
-
 export function registerInsightsResources(
   server: McpServer,
   metaClient: any
@@ -67,10 +65,8 @@ export function registerInsightsResources(
             ],
           }),
         ]);
-
         const calculateMetrics = (data: any[]) => {
           if (!data || data.length === 0) return null;
-
           const totals = data.reduce(
             (acc, insight) => {
               acc.impressions += parseFloat(insight.impressions || "0");
@@ -81,7 +77,6 @@ export function registerInsightsResources(
             },
             { impressions: 0, clicks: 0, spend: 0, reach: 0 }
           );
-
           return {
             impressions: totals.impressions,
             clicks: totals.clicks,
@@ -99,7 +94,6 @@ export function registerInsightsResources(
             frequency: totals.reach > 0 ? totals.impressions / totals.reach : 0,
           };
         };
-
         const performance = {
           campaign_id,
           performance_periods: {
@@ -117,7 +111,6 @@ export function registerInsightsResources(
           })),
           last_updated: new Date().toISOString(),
         };
-
         return {
           contents: [
             {
@@ -150,7 +143,6 @@ export function registerInsightsResources(
       }
     }
   );
-
   // Account Performance Dashboard Resource
   server.resource(
     "account-dashboard",
@@ -176,11 +168,11 @@ export function registerInsightsResources(
                 "ctr",
                 "cpc",
                 "cpm",
+                "actions",
               ],
             }
           ),
         ]);
-
         // Get performance for top campaigns
         const topCampaigns = campaigns.data.slice(0, 10);
         const campaignPerformance = await Promise.all(
@@ -189,9 +181,8 @@ export function registerInsightsResources(
               const insights = await client.getInsights(campaign.id, {
                 level: "campaign",
                 date_preset: "last_30d",
-                fields: ["impressions", "clicks", "spend", "ctr", "cpc"],
+                fields: ["impressions", "clicks", "spend", "ctr", "cpc", "actions", ],
               });
-
               const totals = insights.data.reduce(
                 (acc: any, insight: any) => {
                   acc.impressions += parseFloat(insight.impressions || "0");
@@ -201,7 +192,6 @@ export function registerInsightsResources(
                 },
                 { impressions: 0, clicks: 0, spend: 0 }
               );
-
               return {
                 id: campaign.id,
                 name: campaign.name,
@@ -225,7 +215,6 @@ export function registerInsightsResources(
             }
           })
         );
-
         const accountTotals = accountInsights.data.reduce(
           (acc: any, insight: any) => {
             acc.impressions += parseFloat(insight.impressions || "0");
@@ -236,7 +225,6 @@ export function registerInsightsResources(
           },
           { impressions: 0, clicks: 0, spend: 0, reach: 0 }
         );
-
         const dashboard = {
           account_id,
           overview: {
@@ -278,7 +266,6 @@ export function registerInsightsResources(
           }, {} as any),
           last_updated: new Date().toISOString(),
         };
-
         return {
           contents: [
             {
@@ -311,7 +298,6 @@ export function registerInsightsResources(
       }
     }
   );
-
   // Performance Comparison Resource
   server.resource(
     "performance-comparison",
@@ -325,7 +311,6 @@ export function registerInsightsResources(
           .split(",")
           .map((id: string) => id.trim())
           .slice(0, 5); // Limit to 5 objects
-
         const comparisons = await Promise.all(
           ids.map(async (objectId: string) => {
             try {
@@ -340,9 +325,9 @@ export function registerInsightsResources(
                   "ctr",
                   "cpc",
                   "cpm",
+                  "actions",
                 ],
               });
-
               const totals = insights.data.reduce(
                 (acc: any, insight: any) => {
                   acc.impressions += parseFloat(insight.impressions || "0");
@@ -353,7 +338,6 @@ export function registerInsightsResources(
                 },
                 { impressions: 0, clicks: 0, spend: 0, reach: 0 }
               );
-
               // Try to get campaign name
               let name = objectId;
               try {
@@ -362,7 +346,6 @@ export function registerInsightsResources(
               } catch {
                 // Use ID if name fetch fails
               }
-
               return {
                 id: objectId,
                 name,
@@ -391,7 +374,6 @@ export function registerInsightsResources(
             }
           })
         );
-
         // Calculate rankings
         const validComparisons = comparisons.filter((c) => !c.error);
         const rankings = {
@@ -410,7 +392,6 @@ export function registerInsightsResources(
               (b.metrics?.impressions || 0) - (a.metrics?.impressions || 0)
           ),
         };
-
         const comparison = {
           object_ids: ids,
           period: "Last 30 days",
@@ -423,7 +404,6 @@ export function registerInsightsResources(
           },
           last_updated: new Date().toISOString(),
         };
-
         return {
           contents: [
             {
@@ -456,7 +436,6 @@ export function registerInsightsResources(
       }
     }
   );
-
   // Daily Performance Trends Resource
   server.resource(
     "daily-trends",
@@ -473,7 +452,6 @@ export function registerInsightsResources(
             .split("T")[0],
           until: new Date().toISOString().split("T")[0],
         };
-
         const insights = await client.getInsights(object_id as string, {
           level: "campaign",
           time_range: timeRange,
@@ -485,9 +463,9 @@ export function registerInsightsResources(
             "ctr",
             "cpc",
             "cpm",
+            "actions",
           ],
         });
-
         const dailyData = insights.data
           .map((insight: any) => ({
             date: insight.date_start,
@@ -504,10 +482,8 @@ export function registerInsightsResources(
               new Date(a.date || "").getTime() -
               new Date(b.date || "").getTime()
           );
-
         // Calculate trends
         const trends = calculateTrends(dailyData);
-
         const trendsData = {
           object_id,
           period: `Last ${numDays} days`,
@@ -532,7 +508,6 @@ export function registerInsightsResources(
           },
           last_updated: new Date().toISOString(),
         };
-
         return {
           contents: [
             {
@@ -567,28 +542,22 @@ export function registerInsightsResources(
     }
   );
 }
-
 // Helper Functions
-
 function calculateTrends(dailyData: any[]): any {
   if (dailyData.length < 2) return { insufficient_data: true };
-
   const calculateLinearTrend = (values: number[]) => {
     const n = values.length;
     const sumX = (n * (n - 1)) / 2; // Sum of indices 0,1,2...n-1
     const sumY = values.reduce((sum, val) => sum + val, 0);
     const sumXY = values.reduce((sum, val, index) => sum + index * val, 0);
     const sumXX = (n * (n - 1) * (2 * n - 1)) / 6; // Sum of squares of indices
-
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     return slope;
   };
-
   const impressions = dailyData.map((d) => d.impressions);
   const clicks = dailyData.map((d) => d.clicks);
   const spend = dailyData.map((d) => d.spend);
   const ctr = dailyData.map((d) => d.ctr);
-
   return {
     impressions: {
       slope: calculateLinearTrend(impressions),

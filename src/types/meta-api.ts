@@ -131,6 +131,10 @@ export interface AdInsights {
     action_type: string;
     value: string;
   }>;
+  conversions?: Array<{
+    action_type: string;
+    value: string;
+  }>;
   cost_per_action_type?: Array<{
     action_type: string;
     value: string;

@@ -65,6 +65,8 @@ export function registerAnalyticsTools(
           ctr: insight.ctr,
           cpc: insight.cpc,
           cpm: insight.cpm,
+          actions: insight.actions,
+          conversions: insight.conversions,
         }));
 
         // Calculate summary statistics

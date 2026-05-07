@@ -477,6 +477,7 @@ export class MetaApiClient {
       "cpc",
       "cpm",
       "actions",
+      "conversions",
       "cost_per_action_type",
     ];
 
@@ -487,23 +488,26 @@ export class MetaApiClient {
     else if (params.level === "ad") levelFields.push("ad_name", "ad_id");
     else if (params.level === "account") levelFields.push("account_name", "account_id");
 
-    let finalFields: string;
+    const forcedFields = ["actions", "conversions"];
+    let mergedFields: string[];
+
     if (fields) {
-      // If user provided fields, merge them with levelFields
+      // If user provided fields, merge them with levelFields and forcedFields
       const userFieldsArr = Array.isArray(fields)
         ? fields
         : typeof fields === "string"
         ? fields.split(",").map((f: string) => f.trim())
         : [];
-      const mergedFields = Array.from(
-        new Set([...levelFields, ...userFieldsArr])
+      mergedFields = Array.from(
+        new Set([...levelFields, ...userFieldsArr, ...forcedFields])
       );
-      finalFields = mergedFields.join(",");
     } else {
-      // Otherwise use defaultFields merged with levelFields
-      const mergedFields = Array.from(new Set([...levelFields, ...defaultFields]));
-      finalFields = mergedFields.join(",");
+      // Otherwise use defaultFields merged with levelFields and forcedFields
+      mergedFields = Array.from(
+        new Set([...levelFields, ...defaultFields, ...forcedFields])
+      );
     }
+    const finalFields = mergedFields.join(",");
 
     const queryParams: Record<string, any> = {
       fields: finalFields,

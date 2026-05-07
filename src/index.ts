@@ -265,6 +265,7 @@ async function main() {
               "ctr",
               "cpc",
               "cpm",
+              "actions",
               "conversions",
             ],
             breakdowns: ["age", "gender", "placement", "device", "country"],
