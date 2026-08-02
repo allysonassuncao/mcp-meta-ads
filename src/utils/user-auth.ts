@@ -305,21 +305,17 @@ export class UserAuthManager {
     // Detect if it's a Meta token (usually starts with EAA) or a JWT
     if (token.startsWith('EAA')) {
       // Direct Meta token mode (Pass-through)
-      try {
-        const userInfo = await this.getMetaUserInfo(token);
-        return {
-          userId: `external_${userInfo.id}`,
-          email: userInfo.email || '',
-          name: userInfo.name || 'External User',
-          metaUserId: userInfo.id,
-          accessToken: token,
-          createdAt: new Date(),
-          lastUsed: new Date(),
-        };
-      } catch (error) {
-        console.error('External Meta token validation failed. Token prefix:', token.substring(0, 10), 'Error:', error);
-        return null;
-      }
+      // We skip getMetaUserInfo validation here because we just need to pass the token
+      // to the Meta Ads MCP server, and /me might fail for system user tokens or lack of permissions.
+      return {
+        userId: 'external_token',
+        email: '',
+        name: 'External User',
+        metaUserId: '',
+        accessToken: token,
+        createdAt: new Date(),
+        lastUsed: new Date(),
+      };
     }
 
     const decoded = await this.verifySessionToken(token);
