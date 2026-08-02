@@ -72,8 +72,15 @@ const handler = async (req: Request) => {
       const transport = new SSEClientTransport(
         new URL("https://mcp.facebook.com/ads"),
         {
-          headers: {
-            "Authorization": `Bearer ${userSession.accessToken}`
+          eventSourceInit: {
+            headers: {
+              "Authorization": `Bearer ${userSession.accessToken}`
+            }
+          } as any,
+          requestInit: {
+            headers: {
+              "Authorization": `Bearer ${userSession.accessToken}`
+            }
           }
         }
       );
