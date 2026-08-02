@@ -1,5 +1,3 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { UserAuthManager } from "../src/utils/user-auth.js";
 
 const handler = async (req: Request) => {
@@ -56,9 +54,9 @@ const handler = async (req: Request) => {
   }
 
   if (req.method === "POST") {
-    let body;
+    let bodyText;
     try {
-      body = await req.json();
+      bodyText = await req.text();
     } catch (e) {
       return new Response(JSON.stringify({
         jsonrpc: "2.0",
@@ -68,62 +66,20 @@ const handler = async (req: Request) => {
     }
 
     try {
-      // Create a transport to connect to the official Meta Ads MCP server
-      const transport = new SSEClientTransport(
-        new URL("https://mcp.facebook.com/ads"),
-        {
-          eventSourceInit: {
-            headers: {
-              "Authorization": `Bearer ${userSession.accessToken}`
-            }
-          } as any,
-          requestInit: {
-            headers: {
-              "Authorization": `Bearer ${userSession.accessToken}`
-            }
-          }
-        }
-      );
+      // Forward the JSON-RPC request to the official Meta Ads MCP server
+      const metaResponse = await fetch("https://mcp.facebook.com/ads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${userSession.accessToken}`
+        },
+        body: bodyText
+      });
       
-      const client = new Client(
-        { name: "meta-ads-mcp-proxy", version: "1.0.0" },
-        { capabilities: {} }
-      );
+      const responseText = await metaResponse.text();
       
-      await client.connect(transport);
-      
-      let result;
-      if (body.method === "tools/list") {
-        result = await client.listTools();
-      } else if (body.method === "tools/call") {
-        result = await client.callTool({
-          name: body.params.name,
-          arguments: body.params.arguments || {}
-        });
-      } else if (body.method === "resources/list") {
-        result = await client.listResources();
-      } else if (body.method === "resources/read") {
-        result = await client.readResource({
-          uri: body.params.uri
-        });
-      } else if (body.method === "prompts/list") {
-        result = await client.listPrompts();
-      } else if (body.method === "prompts/get") {
-        result = await client.getPrompt({
-          name: body.params.name,
-          arguments: body.params.arguments
-        });
-      } else {
-        throw new Error(`Method ${body.method} not supported by this proxy.`);
-      }
-      
-      await transport.close();
-      
-      return new Response(JSON.stringify({
-        jsonrpc: "2.0",
-        result,
-        id: body.id
-      }), {
+      return new Response(responseText, {
+        status: metaResponse.status,
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json"
@@ -134,7 +90,7 @@ const handler = async (req: Request) => {
       return new Response(JSON.stringify({
         jsonrpc: "2.0",
         error: { code: -32000, message: error instanceof Error ? error.message : "Unknown error connecting to Meta MCP" },
-        id: body.id || null
+        id: null
       }), {
         headers: {
           ...corsHeaders,
